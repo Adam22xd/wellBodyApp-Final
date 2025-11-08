@@ -15,7 +15,9 @@ function App() {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [errors, setErrors] = useState({ name: "", surname: "", password: "" });
 
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("login") && !!localStorage.getItem("password"));
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    !!localStorage.getItem("login") && !!localStorage.getItem("password")
+  );
 
   // Dane logowania
   const [login, setLogin] = useState(() => localStorage.getItem("login") || "");
@@ -43,12 +45,6 @@ function App() {
 
     return [value, setValue];
   };
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      alert(`👋 Witaj ponownie, ${login}!`);
-    }
-  }, [isLoggedIn]);
 
   // Dane fitness
   const [water, setWater] = usePersistentState("water", 0);
@@ -95,7 +91,7 @@ function App() {
 
     if (hasError) return; // zatrzymuje, jeśli są błędy
 
-    registerStats.addUser(name, password, email);
+    registerStats.addUser(name, surname, password);
     alert("✅ Konto zostało utworzone!");
     registerStats.showUsersData();
 
@@ -118,14 +114,14 @@ function App() {
       localStorage.setItem("login", login);
       localStorage.setItem("password", password);
       alert("✅ Zalogowano pomyślnie!");
+      setIsLoggedIn(true);
+      setIsMenuVisible(true);
       setActiveSection("");
     } else {
       alert("❌ Niepoprawne dane logowania!");
+      setIsLoggedIn(false);
+      setIsMenuVisible(false);
     }
-
-    setIsLoggedIn(true);
-    setIsMenuVisible(true);
-    setActiveSection("");
   };
 
   const handleResetLogin = () => {

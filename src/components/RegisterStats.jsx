@@ -1,4 +1,3 @@
-import RegisterForm from "./RegisterForm";
 
 export default class RegisterStats {
   constructor(name, surname, password) {
@@ -29,9 +28,9 @@ export default class RegisterStats {
     });
   }
 
-  checkLogin(email, password) {
+  checkLogin(name, password) {
     const user = this.users.find(
-      (u) => u.email === email && u.password === password
+      (u) => u.name === name && u.password === password
     );
 
     if (user) {
