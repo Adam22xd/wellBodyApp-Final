@@ -15,6 +15,8 @@ function App() {
   const [isMenuVisible, setIsMenuVisible] = useState(false);
   const [errors, setErrors] = useState({ name: "", surname: "", password: "" });
 
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("login") && !!localStorage.getItem("password"));
+
   // Dane logowania
   const [login, setLogin] = useState(() => localStorage.getItem("login") || "");
   const [password, setPassword] = useState(
@@ -41,6 +43,12 @@ function App() {
 
     return [value, setValue];
   };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      alert(`👋 Witaj ponownie, ${login}!`);
+    }
+  }, [isLoggedIn]);
 
   // Dane fitness
   const [water, setWater] = usePersistentState("water", 0);
@@ -114,6 +122,10 @@ function App() {
     } else {
       alert("❌ Niepoprawne dane logowania!");
     }
+
+    setIsLoggedIn(true);
+    setIsMenuVisible(true);
+    setActiveSection("");
   };
 
   const handleResetLogin = () => {
@@ -128,6 +140,9 @@ function App() {
     }
 
     registerStats.showUsersData();
+
+    setIsLoggedIn(false);
+    setIsMenuVisible(false);
   };
 
   const getProgress = (current, limit) => {
@@ -158,33 +173,42 @@ function App() {
         <h1 className="greeting">
           {login ? `Witaj, ${login}!` : "Witaj, użytkowniku"}
         </h1>
+        {/* Jeśli NIE zalogowany → pokaż logowanie/rejestrację */}
+        {!isLoggedIn ? (
+          <>
+            <button
+              className="account"
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "rejestrboard" ? null : "rejestrboard"
+                )
+              }
+            >
+              Zaloguj się
+            </button>
 
-        {/* Przycisk logowania */}
-        <button
-          className="account"
-          onClick={() =>
-            setActiveSection(
-              activeSection === "rejestrboard" ? null : "rejestrboard"
-            )
-          }
-        >
-          Zaloguj się
-        </button>
-
-        {/* Przycisk rejestracji */}
-        <button
-          className="register"
-          onClick={() =>
-            setActiveSection(activeSection === "register" ? null : "register")
-          }
-        >
-          Zarejestruj się
-        </button>
+            <button
+              className="register"
+              onClick={() =>
+                setActiveSection(
+                  activeSection === "register" ? null : "register"
+                )
+              }
+            >
+              Zarejestruj się
+            </button>
+          </>
+        ) : (
+          // Jeśli zalogowany → pokaż przycisk wylogowania
+          <button className="logout" onClick={handleResetLogin}>
+            Wyloguj się
+          </button>
+        )}
       </nav>
 
       {/* --- MENU FITNESS --- */}
       <div className="cards">
-        {isMenuVisible && (
+        {isMenuVisible && isLoggedIn && (
           <>
             <WaterSection
               water={water}
