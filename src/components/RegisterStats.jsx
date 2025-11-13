@@ -1,12 +1,23 @@
-
 export default class RegisterStats {
   constructor(name, surname, password) {
     this.name = name;
     this.surname = surname;
     this.password = password;
 
-    const saveUsers = JSON.parse(localStorage.getItem("usersData")) || [];
-    this.users = saveUsers;
+     const saveUsers = JSON.parse(localStorage.getItem("usersData")) || [];
+
+
+    // To tzw. operator OR (lub)
+    //W tym kontekście działa jak „ustaw wartość domyślną”.
+
+    //Jeśli JSON.parse(localStorage.getItem("usersData")) zwróci null (czyli nic nie ma w localStorage),
+    //to zamiast null użyje pustej tablicy [].
+
+
+     this.users = saveUsers;
+
+     console.log(RegisterStats.user);
+     
   }
 
   addUser(name, surname, password) {
@@ -41,8 +52,4 @@ export default class RegisterStats {
       return false;
     }
   }
-
-
-
-  
 }

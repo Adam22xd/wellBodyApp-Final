@@ -8,6 +8,7 @@ import DayPlanning from "./components/DayPlanning";
 import RegisterForm from "./components/RegisterForm";
 import LoginPanel from "./components/LoginPanel";
 import RegisterStats from "./components/registerStats";
+import Timer from "./Timer";
 
 function App() {
   // ------------------ STANY ------------------
@@ -18,6 +19,15 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     !!localStorage.getItem("login") && !!localStorage.getItem("password")
   );
+
+  const [step, setStep] = useState(1);
+  const [showMenuUser, setShowMenuUser] = useState(false);
+
+
+  // --------- Napoje, jedzenie -------//
+
+  const [drinks, setDrinks] = useState([]);
+  const [newDrink, setNewDrink] = useState("");
 
   // Dane logowania
   const [login, setLogin] = useState(() => localStorage.getItem("login") || "");
@@ -139,7 +149,15 @@ function App() {
 
     setIsLoggedIn(false);
     setIsMenuVisible(false);
+    setStep(1);
   };
+
+  /* pokaż kolejną sekcje */
+
+  const handleNextStep = () => {
+    setStep((prev) => prev + 1);
+  };
+
 
   const getProgress = (current, limit) => {
     if (limit <= 0) return 0;
@@ -154,7 +172,6 @@ function App() {
   return (
     <div className="main-icon">
       <nav className="navbar">
-        {/* Przycisk menu */}
         <button
           className="menuApp"
           onClick={() => {
@@ -165,19 +182,16 @@ function App() {
           {isMenuVisible ? "Wróć" : "Konto"}
         </button>
 
-        {/* Powitanie */}
         <h1 className="greeting">
           {login ? `Witaj, ${login}!` : "Witaj, użytkowniku"}
         </h1>
-        {/* Jeśli NIE zalogowany → pokaż logowanie/rejestrację */}
+
         {!isLoggedIn ? (
           <>
             <button
               className="account"
               onClick={() =>
-                setActiveSection(
-                  activeSection === "rejestrboard" ? null : "rejestrboard"
-                )
+                setActiveSection(activeSection === "login" ? null : "login")
               }
             >
               Zaloguj się
@@ -195,44 +209,61 @@ function App() {
             </button>
           </>
         ) : (
-          // Jeśli zalogowany → pokaż przycisk wylogowania
           <button className="logout" onClick={handleResetLogin}>
             Wyloguj się
           </button>
         )}
+
+        <Timer />
       </nav>
 
-      {/* --- MENU FITNESS --- */}
-      <div className="cards">
-        {isMenuVisible && isLoggedIn && (
-          <>
-            <WaterSection
-              water={water}
-              waterLimit={waterLimit}
-              setWater={setWater}
-              getProgress={getProgress}
-            />
+      {/* --- SEKCJE FITNESS --- */}
+      {isLoggedIn && step === 1 && (
+        <div className="water-section">
+          <WaterSection
+            water={water}
+            waterLimit={waterLimit}
+            setWater={setWater}
+            getProgress={getProgress}
+          />
+          <button className="next" onClick={handleNextStep}>
+            Dalej
+          </button>
+        </div>
+      )}
 
-            <CaloriesSection
-              calories={calories}
-              calorieLimit={calorieLimit}
-              setCalorieLimit={setCalorieLimit}
-              getProgress={getProgress}
-            />
+      {isLoggedIn && step === 2 && (
+        <div className="calories-section">
+          <CaloriesSection
+            calories={calories}
+            setCalories={setCalories}
+            calorieLimit={calorieLimit}
+            setCalorieLimit={setCalorieLimit}
+            getProgress={getProgress}
+          />
+          <button className="next" onClick={handleNextStep}>
+            Dalej
+          </button>
+        </div>
+      )}
 
-            <DayPlanning
-              water={water}
-              waterLimit={waterLimit}
-              calories={calories}
-              calorieLimit={calorieLimit}
-              getProgress={getProgress}
-            />
-          </>
-        )}
-      </div>
+      {isLoggedIn && step === 3 && (
+        <div className="day-planning">
+          <DayPlanning
+            water={water}
+            waterLimit={waterLimit}
+            calories={calories}
+            calorieLimit={calorieLimit}
+            getProgress={getProgress}
+          />
+          <button className="next" onClick={handleNextStep}>
+            Dalej
+          </button>
+        </div>
+      )}
 
       {/* --- PANEL LOGOWANIA --- */}
-      {activeSection === "rejestrboard" && (
+      {activeSection === "login" && !isLoggedIn && (
         <LoginPanel
           login={login}
           setLogin={setLogin}
@@ -244,7 +275,7 @@ function App() {
       )}
 
       {/* --- FORMULARZ REJESTRACJI --- */}
-      {activeSection === "register" && (
+      {activeSection === "register" && !isLoggedIn && (
         <RegisterForm
           name={name}
           setName={setName}
@@ -258,8 +289,75 @@ function App() {
           errors={errors}
         />
       )}
+
+
+      {/*menu użytkownika dodaj jedznie, napoje*/}
+      
+      {step === 4 && showMenuUser === false && (
+        <header className="user-menu">
+          <div className="menu-for-client">
+            <button className="btn-plus" >
+              &#43;
+            </button>{" "}
+            <a
+              className="text-next-to-btn"
+              onClick={() => setShowMenuUser("drinks")}
+            >
+              Dodaj napoje
+            </a>
+            <div className="viev-icon-items"></div>
+          </div>
+          <div className="menu-for-client">
+            <button className="btn-plus">
+              &#43;
+            </button>{" "}
+            <a className="text-next-to-btn">Dodaj posiłek</a>
+            <div className="viev-icon-items"></div>
+          </div>
+        </header>
+      )}
+      {showMenuUser === "drinks" && (
+        <div className="drinks-panel">
+          <h2>Dodaj napój</h2>
+
+          <input
+            type="text"
+            value={newDrink}
+            onChange={(e) => setNewDrink(e.target.value)}
+            placeholder="Wpisz napój..."
+          />
+
+          <button
+            onClick={() => {
+              if (newDrink.trim() !== "") {
+                setDrinks([...drinks, newDrink]);
+                setNewDrink("");
+              }
+            }}
+          >
+            Dodaj
+          </button>
+
+          <ul>
+            {drinks.map((drink, index) => (
+              <li key={index}>{drink}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
+
+// const [activeSection, setActiveSection] = useState(""); // login/register/menu
+// const [isMenuVisible, setIsMenuVisible] = useState(false);
+// const [errors, setErrors] = useState({ name: "", surname: "", password: "" });
+
+// const [isLoggedIn, setIsLoggedIn] = useState(
+//   !!localStorage.getItem("login") && !!localStorage.getItem("password")
+// );
+
+// const [step, setStep] = useState(1);
+// const [showMenuUser, setShowMenuUser] = useState(false);
 
 export default App;
