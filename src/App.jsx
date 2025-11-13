@@ -8,8 +8,6 @@ import DayPlanning from "./components/DayPlanning";
 import RegisterForm from "./components/RegisterForm";
 import LoginPanel from "./components/LoginPanel";
 import RegisterStats from "./utils/RegisterStats.js";
-
-
 import Timer from "./Timer";
 
 function App() {
