@@ -7,7 +7,7 @@ import CaloriesSection from "./components/CaloriesSection";
 import DayPlanning from "./components/DayPlanning";
 import RegisterForm from "./components/RegisterForm";
 import LoginPanel from "./components/LoginPanel";
-import RegisterStats from "./components/registerStats";
+import RegisterStats from "./components/RegisterStats";
 import Timer from "./Timer";
 
 function App() {
