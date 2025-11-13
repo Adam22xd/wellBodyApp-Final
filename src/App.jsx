@@ -7,7 +7,8 @@ import CaloriesSection from "./components/CaloriesSection";
 import DayPlanning from "./components/DayPlanning";
 import RegisterForm from "./components/RegisterForm";
 import LoginPanel from "./components/LoginPanel";
-import RegisterStats from "./components/RegisterStats";
+import RegisterStats from "./utils/RegisterStats";
+
 import Timer from "./Timer";
 
 function App() {
@@ -22,7 +23,6 @@ function App() {
 
   const [step, setStep] = useState(1);
   const [showMenuUser, setShowMenuUser] = useState(false);
-
 
   // --------- Napoje, jedzenie -------//
 
@@ -67,7 +67,7 @@ function App() {
 
   // ------------------ FUNKCJE ------------------
 
-  const registerStats = new RegisterStats();
+  <RegisterStats />;
 
   const handleRegister = () => {
     const newErrors = { name: "", surname: "", password: "" };
@@ -157,7 +157,6 @@ function App() {
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
   };
-
 
   const getProgress = (current, limit) => {
     if (limit <= 0) return 0;
@@ -290,15 +289,12 @@ function App() {
         />
       )}
 
-
       {/*menu użytkownika dodaj jedznie, napoje*/}
-      
+
       {step === 4 && showMenuUser === false && (
         <header className="user-menu">
           <div className="menu-for-client">
-            <button className="btn-plus" >
-              &#43;
-            </button>{" "}
+            <button className="btn-plus">&#43;</button>{" "}
             <a
               className="text-next-to-btn"
               onClick={() => setShowMenuUser("drinks")}
@@ -308,9 +304,7 @@ function App() {
             <div className="viev-icon-items"></div>
           </div>
           <div className="menu-for-client">
-            <button className="btn-plus">
-              &#43;
-            </button>{" "}
+            <button className="btn-plus">&#43;</button>{" "}
             <a className="text-next-to-btn">Dodaj posiłek</a>
             <div className="viev-icon-items"></div>
           </div>
