@@ -1,356 +1,433 @@
-import { useState, useEffect } from "react";
 import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-import WaterSection from "./components/WaterSection";
-import CaloriesSection from "./components/CaloriesSection";
-import DayPlanning from "./components/DayPlanning";
-import RegisterForm from "./components/RegisterForm";
-import LoginPanel from "./components/LoginPanel";
-import RegisterStats from "./utils/RegisterStats.js";
-import Timer from "./Timer";
+import useAuth from "./hooks/useAuth";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
+import { useState } from "react";
+import stats from "./hooks/RegisterStats";
+import FoodModel from "./hooks/FoodModel";
+import FoodPanel from "./FoodPanel";
+import WaterPanel from "./WaterPanel";
+import WaterList from "./WaterList";
+import Menu from "./Menu";
+import FoodList from "./FoodList";
 
-function App() {
-  // ------------------ STANY ------------------
-  const [activeSection, setActiveSection] = useState(""); // login/register/menu
-  const [isMenuVisible, setIsMenuVisible] = useState(false);
-  const [errors, setErrors] = useState({ name: "", surname: "", password: "" });
+console.log("DEPLOY OK wellBodyApp-Final");
+export default function App() {
 
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("login") && !!localStorage.getItem("password")
-  );
+  const [regPassword, setRegPassword] = useState("");
+  const [isLoginVisible, setIsLoginVisible] = useState(false);
+  const [isRegisterVisible, setIsRegisterVisible] = useState(false);
 
-  const [step, setStep] = useState(1);
-  const [showMenuUser, setShowMenuUser] = useState(false);
+  // 🔥 JEDYNY STAN PANELI
+  const [activePanel, setActivePanel] = useState(null);
+  // "food" | "water" | null
 
-  // --------- Napoje, jedzenie -------//
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const [drinks, setDrinks] = useState([]);
-  const [newDrink, setNewDrink] = useState("");
+  const [foodModel, setFoodModel] = useState(null);
 
-  // Dane logowania
-  const [login, setLogin] = useState(() => localStorage.getItem("login") || "");
-  const [password, setPassword] = useState(
-    () => localStorage.getItem("password") || ""
-  );
+  const [waterForm, setWaterForm] = useState({
+    name: "",
+    amount: "",
+  });
 
-  // Dane rejestracji
-  const [name, setName] = useState(() => localStorage.getItem("name") || "");
-  const [surname, setSurname] = useState(
-    () => localStorage.getItem("surname") || ""
-  );
-  const [email, setEmail] = useState(() => localStorage.getItem("email") || "");
+  const [waterItems, setWaterItems] = useState([]);
 
-  // ------------------ HOOK PERSISTENT STATE ------------------
-  const usePersistentState = (key, defaultValue) => {
-    const [value, setValue] = useState(() => {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : defaultValue;
-    });
+  const {
+    login,
+    setLogin,
+    password,
+    setPassword,
+    name,
+    setName,
+    surname,
+    setSurname,
+    errors,
+    isLoggedIn,
+    register,
+    logout,
+    loginAllFunc,
+  } = useAuth();
 
-    useEffect(() => {
-      localStorage.setItem(key, JSON.stringify(value));
-    }, [key, value]);
-
-    return [value, setValue];
+  const handleLogin = () => {
+    if (loginAllFunc()) {
+      alert("Zalogowano pomyślnie");
+      setIsLoginVisible(false);
+    }
   };
-
-  // Dane fitness
-  const [water, setWater] = usePersistentState("water", 0);
-  const [waterLimit, setWaterLimit] = usePersistentState("waterLimit", 3);
-  const [calories, setCalories] = usePersistentState("calories", 0);
-  const [calorieLimit, setCalorieLimit] = usePersistentState(
-    "calorieLimit",
-    400
-  );
-
-  // ------------------ FUNKCJE ------------------
-
-  <RegisterStats />;
 
   const handleRegister = () => {
-    const newErrors = { name: "", surname: "", password: "" };
-    let hasError = false;
-
-    if (name.trim() === "") {
-      newErrors.name = "Imię jest wymagane.";
-      hasError = true;
-    } else if (name.trim().length < 3) {
-      newErrors.name = "Imię musi mieć co najmniej 3 znaki.";
-      hasError = true;
-    }
-
-    if (surname.trim() === "") {
-      newErrors.surname = "Nazwisko jest wymagane.";
-      hasError = true;
-    } else if (surname.trim().length < 3) {
-      newErrors.surname = "Nazwisko musi mieć co najmniej 3 znaki.";
-      hasError = true;
-    }
-
-    if (password.trim() === "") {
-      newErrors.password = "Hasło jest wymagane.";
-      hasError = true;
-    } else if (password.trim().length < 8) {
-      newErrors.password = "Hasło musi mieć co najmniej 8 znaków.";
-      hasError = true;
-    }
-
-    setErrors(newErrors);
-
-    if (hasError) return; // zatrzymuje, jeśli są błędy
-
-    registerStats.addUser(name, surname, password);
-    alert("✅ Konto zostało utworzone!");
-    registerStats.showUsersData();
-
-    // wyczyszczenie formularza
-    setName("");
-    setSurname("");
-    setPassword("");
-    setErrors({ name: "", surname: "", password: "" });
-  };
-
-  const handleSaveLogin = () => {
-    if (login.trim() === "" || password.trim() === "") {
-      alert("✖️ Podaj swoje dane!");
-      return;
-    }
-
-    const success = registerStats.checkLogin(login, password);
-
-    if (success) {
-      localStorage.setItem("login", login);
-      localStorage.setItem("password", password);
-      alert("✅ Zalogowano pomyślnie!");
-      setIsLoggedIn(true);
-      setIsMenuVisible(true);
-      setActiveSection("");
-    } else {
-      alert("❌ Niepoprawne dane logowania!");
-      setIsLoggedIn(false);
-      setIsMenuVisible(false);
+    if (register()) {
+      alert("Zarejestrowano pomyślnie");
+      stats.showUsersData();
+      setName("");
+      setSurname("");
+      setRegPassword("");
+      setIsRegisterVisible(false);
     }
   };
 
-  const handleResetLogin = () => {
-    localStorage.removeItem("login", login);
-    localStorage.removeItem("password", password);
-    setLogin("");
-    setPassword("");
-    alert("🔄 Dane logowania zostały zresetowane.");
+  // ===== PANELS =====
 
-    if (registerStats !== registerStats.addUser()) {
-      console.log("nie istnieje taki uzytkownik");
-    }
-
-    registerStats.showUsersData();
-
-    setIsLoggedIn(false);
-    setIsMenuVisible(false);
-    setStep(1);
+  const openFoodPanel = () => {
+    setFoodModel((prev) => prev ?? new FoodModel());
+    setActivePanel("food");
   };
 
-  /* pokaż kolejną sekcje */
-
-  const handleNextStep = () => {
-    setStep((prev) => prev + 1);
+  const openWaterPanel = () => {
+    setActivePanel("water");
   };
 
-  const getProgress = (current, limit) => {
-    if (limit <= 0) return 0;
-    return Math.min(100, Math.round((current / limit) * 100));
+  const closePanel = () => {
+    setActivePanel(null);
   };
 
-  useEffect(() => {
-    if (activeSection !== "") setIsMenuVisible(false);
-  }, [activeSection]);
+  // ===== FOOD =====
 
-  // ------------------ JSX ------------------
+  const addProduct = () => {
+    setFoodModel((prev) => {
+      if (!prev) return prev;
+
+      const updated = new FoodModel(prev.name, prev.weight, prev.calories);
+      updated.history = [...prev.history];
+
+      updated.add(updated.name, updated.weight, updated.calories);
+
+      updated.name = "";
+      updated.weight = "";
+      updated.calories = "";
+
+      return updated;
+    });
+
+    closePanel(); // 🔥 ZAMYKA PANEL
+  };
+
+  const updateModel = (field, value) => {
+    setFoodModel((prev) => {
+      if (!prev) return prev;
+
+      const updated = new FoodModel(prev.name, prev.weight, prev.calories);
+      updated.history = [...prev.history];
+      updated[field] = value;
+
+      return updated;
+    });
+  };
+
+  // ===== WATER =====
+
+  const updateWaterForm = (field, value) => {
+    setWaterForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const addWater = () => {
+    setWaterItems((prev) => [...prev, { ...waterForm }]);
+    setWaterForm({ name: "", amount: "" });
+
+    closePanel(); // 🔥 ZAMYKA PANEL
+    if (!waterForm.name || !waterForm.amount) return;
+  };
+
+  // ===== CALORIES =====
+
+  const CALORIES_LIMIT = 2000;
+
+  const totalCaloriesSum =
+    foodModel?.history?.reduce(
+      (sum, item) => sum + Number(item.calories || 0),
+      0
+    ) || 0;
+
+  const radius = 50;
+  const stroke = 10;
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = 2 * Math.PI * normalizedRadius;
+
+  const caloriesPercent = Math.min(
+    (totalCaloriesSum / CALORIES_LIMIT) * 100,
+    100
+  );
+
+  const strokeDashoffset =
+    circumference - (caloriesPercent / 100) * circumference;
+
+  // ======== WODA ============ //
+
+  const WATER_LIMIT = 2000;
+
+  const totalWaterSum = () =>
+    waterItems.reduce((sum, item) => sum + Number(item.amount), 0);
+
+  const percentWater = () =>
+    Math.min((totalWaterSum() / WATER_LIMIT) * 100, 100);
+
+  const waterStrokeOffset = () =>
+    circumference - (percentWater() / 100) * circumference;
+
   return (
     <div className="main-icon">
       <nav className="navbar">
-        <button
-          className="menuApp"
-          onClick={() => {
-            setIsMenuVisible((prev) => !prev);
-            setActiveSection(""); // zamknij inne sekcje
-          }}
-        >
-          {isMenuVisible ? "Wróć" : "Konto"}
-        </button>
+        {isLoggedIn && (
+          <button
+            className="logout"
+            onClick={() => {
+              logout();
+              setIsMenuOpen(false);
+              closePanel();
+            }}
+          >
+            Wyloguj
+          </button>
+        )}
 
+        <a className="titleApp">Fit-App</a>
         <h1 className="greeting">
-          {login ? `Witaj, ${login}!` : "Witaj, użytkowniku"}
+          {isLoggedIn && `Witaj, ${login || "użytkowniku"}`}
         </h1>
 
-        {!isLoggedIn ? (
+        {!isLoggedIn && (
           <>
             <button
               className="account"
-              onClick={() =>
-                setActiveSection(activeSection === "login" ? null : "login")
-              }
+              onClick={() => {
+                setIsLoginVisible(!isLoginVisible);
+                setIsRegisterVisible(false);
+              }}
             >
               Zaloguj się
             </button>
 
             <button
               className="register"
-              onClick={() =>
-                setActiveSection(
-                  activeSection === "register" ? null : "register"
-                )
-              }
+              onClick={() => {
+                setIsRegisterVisible(!isRegisterVisible);
+                setIsLoginVisible(false);
+              }}
             >
               Zarejestruj się
             </button>
           </>
-        ) : (
-          <button className="logout" onClick={handleResetLogin}>
-            Wyloguj się
-          </button>
         )}
-
-        <Timer />
       </nav>
 
-      {/* --- SEKCJE FITNESS --- */}
-      {isLoggedIn && step === 1 && (
-        <div className="water-section">
-          <WaterSection
-            water={water}
-            waterLimit={waterLimit}
-            setWater={setWater}
-            getProgress={getProgress}
-          />
-          <button className="next" onClick={handleNextStep}>
-            Dalej
-          </button>
-        </div>
-      )}
-
-      {isLoggedIn && step === 2 && (
-        <div className="calories-section">
-          <CaloriesSection
-            calories={calories}
-            setCalories={setCalories}
-            calorieLimit={calorieLimit}
-            setCalorieLimit={setCalorieLimit}
-            getProgress={getProgress}
-          />
-          <button className="next" onClick={handleNextStep}>
-            Dalej
-          </button>
-        </div>
-      )}
-
-      {isLoggedIn && step === 3 && (
-        <div className="day-planning">
-          <DayPlanning
-            water={water}
-            waterLimit={waterLimit}
-            calories={calories}
-            calorieLimit={calorieLimit}
-            getProgress={getProgress}
-          />
-          <button className="next" onClick={handleNextStep}>
-            Dalej
-          </button>
-        </div>
-      )}
-
-      {/* --- PANEL LOGOWANIA --- */}
-      {activeSection === "login" && !isLoggedIn && (
-        <LoginPanel
+      {isLoginVisible && (
+        <LoginForm
           login={login}
-          setLogin={setLogin}
           password={password}
+          setLogin={setLogin}
           setPassword={setPassword}
-          handleSaveLogin={handleSaveLogin}
-          handleResetLogin={handleResetLogin}
+          onLogin={handleLogin}
         />
       )}
 
-      {/* --- FORMULARZ REJESTRACJI --- */}
-      {activeSection === "register" && !isLoggedIn && (
+      {isRegisterVisible && (
         <RegisterForm
           name={name}
-          setName={setName}
-          email={email}
-          setEmail={setEmail}
           surname={surname}
+          regPassword={regPassword}
+          setName={setName}
           setSurname={setSurname}
-          password={password}
-          setPassword={setPassword}
-          handleRegister={handleRegister}
+          setRegPassword={setRegPassword}
+          onRegister={handleRegister}
           errors={errors}
         />
       )}
-
-      {/*menu użytkownika dodaj jedznie, napoje*/}
-
-      {step === 4 && showMenuUser === false && (
-        <header className="user-menu">
-          <div className="menu-for-client">
-            <button className="btn-plus">&#43;</button>{" "}
-            <a
-              className="text-next-to-btn"
-              onClick={() => setShowMenuUser("drinks")}
-            >
-              Dodaj napoje
-            </a>
-            <div className="viev-icon-items"></div>
-          </div>
-          <div className="menu-for-client">
-            <button className="btn-plus">&#43;</button>{" "}
-            <a className="text-next-to-btn">Dodaj posiłek</a>
-            <div className="viev-icon-items"></div>
-          </div>
-        </header>
+      {isLoggedIn && (
+        <Menu
+          isMenuOpen={isMenuOpen}
+          onFoodSelect={openFoodPanel}
+          onWaterSelect={openWaterPanel}
+          onToggleMenu={() => setIsMenuOpen((p) => !p)}
+        />
       )}
-      {showMenuUser === "drinks" && (
-        <div className="drinks-panel">
-          <h2>Dodaj napój</h2>
 
-          <input
-            type="text"
-            value={newDrink}
-            onChange={(e) => setNewDrink(e.target.value)}
-            placeholder="Wpisz napój..."
-          />
+      {isLoggedIn && (
+        <div className="panels-only">
+          <div className="panels-row">
+            {activePanel === "food" && (
+              <FoodPanel
+                model={foodModel}
+                onClose={closePanel}
+                toAdd={addProduct}
+                onUpdate={updateModel}
+              />
+            )}
 
-          <button
-            onClick={() => {
-              if (newDrink.trim() !== "") {
-                setDrinks([...drinks, newDrink]);
-                setNewDrink("");
-              }
-            }}
-          >
-            Dodaj
-          </button>
+            {activePanel === "water" && (
+              <WaterPanel
+                form={waterForm}
+                onUpdate={updateWaterForm}
+                onAdd={addWater}
+                onClose={closePanel}
+              />
+            )}
+          </div>
 
-          <ul>
-            {drinks.map((drink, index) => (
-              <li key={index}>{drink}</li>
-            ))}
-          </ul>
+          {/*calorie widok */}
+
+          <div className="waterAndCaloriesCircle">
+            <div className="calories-summary">
+              Twój limit
+              <div
+                style={{
+                  position: "relative",
+                  width: "120px",
+                  height: "120px",
+                }}
+              >
+                <svg
+                  width="120"
+                  height="120"
+                  viewBox="0 0 120 120"
+                  style={{ transform: "rotate(-90deg)" }}
+                >
+                  <defs>
+                    {/* gradient */}
+                    <linearGradient
+                      id="calGradient"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="0%"
+                    >
+                      <stop offset="0%" stopColor="#ff7a18" />
+                      <stop offset="100%" stopColor="#ff3d00" />
+                    </linearGradient>
+
+                    {/* cień */}
+                    <filter
+                      id="shadow"
+                      x="-50%"
+                      y="-50%"
+                      width="200%"
+                      height="200%"
+                    >
+                      <feDropShadow
+                        dx="0"
+                        dy="2"
+                        stdDeviation="4"
+                        floodColor="#ff3d00"
+                        floodOpacity="0.35"
+                      />
+                    </filter>
+                  </defs>
+
+                  {/* tło */}
+                  <circle
+                    r={normalizedRadius}
+                    cx="60"
+                    cy="60"
+                    fill="transparent"
+                    stroke="#f1f1f1"
+                    strokeWidth={stroke}
+                  />
+
+                  {/* progress */}
+                  <circle
+                    r={normalizedRadius}
+                    cx="60"
+                    cy="60"
+                    fill="transparent"
+                    stroke="url(#calGradient)"
+                    strokeWidth={stroke}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    filter="url(#shadow)"
+                    style={{
+                      transition:
+                        "stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)",
+                    }}
+                  />
+                </svg>
+
+                <div
+                  className="calories-text"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {totalCaloriesSum} / {CALORIES_LIMIT} kcal
+                </div>
+              </div>
+            </div>
+
+            {/*Woda circle*/}
+
+            <div className="water-summary">
+              Woda
+              <div
+                style={{
+                  position: "relative",
+                  width: "120px",
+                  height: "120px",
+                }}
+              >
+                <svg
+                  width="120"
+                  height="120"
+                  style={{ transform: "rotate(-90deg)" }}
+                >
+                  {/* tło */}
+                  <circle
+                    stroke="#e0e0e0"
+                    fill="transparent"
+                    strokeWidth={stroke}
+                    r={normalizedRadius}
+                    cx={radius}
+                    cy={radius}
+                  />
+
+                  {/* progress wody */}
+                  <circle
+                    stroke="dodgerblue"
+                    fill="transparent"
+                    strokeWidth={stroke}
+                    strokeDasharray={circumference}
+                    strokeDashoffset={waterStrokeOffset()}
+                    strokeLinecap="round"
+                    r={normalizedRadius}
+                    cx={radius}
+                    cy={radius}
+                    style={{ transition: "stroke-dashoffset 0.4s ease" }}
+                  />
+                </svg>
+
+                {/* tekst w środku */}
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    fontWeight: "bold",
+                    fontSize: "14px",
+                  }}
+                >
+                  {totalWaterSum()} / {WATER_LIMIT} ml
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {activePanel === null && (
+            <div className="products-lists">
+              <FoodList items={foodModel?.history} />
+              <WaterList items={waterItems} />
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
-
-// const [activeSection, setActiveSection] = useState(""); // login/register/menu
-// const [isMenuVisible, setIsMenuVisible] = useState(false);
-// const [errors, setErrors] = useState({ name: "", surname: "", password: "" });
-
-// const [isLoggedIn, setIsLoggedIn] = useState(
-//   !!localStorage.getItem("login") && !!localStorage.getItem("password")
-// );
-
-// const [step, setStep] = useState(1);
-// const [showMenuUser, setShowMenuUser] = useState(false);
-
-export default App;
