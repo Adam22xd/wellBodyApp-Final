@@ -9,7 +9,7 @@
 
 body {
   background-color: black;
-  font-family: "Trebuchet MS", Arial, sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .main-icon {
@@ -193,17 +193,19 @@ body {
   border-radius: 50%;
   cursor: pointer;
 }
-
-
+/* 
 .burger-panel {
-  margin-top: 10px;
+  /* margin-top: 10px; */
+  top: 0px;
+  left: 0px;
   background: white;
   border-radius: 12px;
-  padding: 10px;
+  /* padding: 10px; */
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
+  width: 100%;
+} */
 
 .burger-item {
   border: none;
@@ -218,8 +220,6 @@ body {
 .burger-item:hover {
   border: 2px solid gray;
 }
-
-
 
 /* =========================================
    PANEL NAPOJÓW (DrinksPanel)
@@ -420,7 +420,6 @@ input.passwordforregister {
 
 .header-container-main {
   display: flex;
-  
 }
 
 .header-container {
@@ -524,19 +523,42 @@ input.passwordforregister {
 }
 
 .products-lists {
+  display: flex;
   width: 100%;
   height: auto;
-  display: flex;
   justify-content: space-around;
   align-items: center;
   gap: 30px;
   padding: 6px;
 }
 
+.products-lists > * {
+  text-align: center;
+  margin-top: 8px;
+}
+
 /* === HISTORIA === */
 
+.history {
+  display: flex;
+  flex-direction: column;
+}
 
+/*==== HISTORIA POSIŁKÓW ======*/
 
+.history-name {
+  color: orange;
+}
+
+.history-weight{
+  color: orange;
+
+}
+
+.history-calories {
+  color: orange;
+
+}
 
 .history-title {
   margin-top: 25px;
@@ -553,6 +575,9 @@ input.passwordforregister {
 }
 
 .history-item {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
   background: #2b2b2b;
   padding: 10px 12px;
   border-radius: 8px;
@@ -560,6 +585,14 @@ input.passwordforregister {
   border-left: 4px solid #28c7e1;
   color: #d9f9ff;
 }
+
+.history-amount {
+  display: flex;
+  gap: 20px;
+  color:red;
+}
+
+
 
 /* =========================================
    WATER PANEL
@@ -881,12 +914,22 @@ button:disabled {
   color: #00eaff;
 }
 
+.stats-wrapper {
+  display: flex;
+  justify-content: space-between; /* kontrola osi Y */
+  width: 100%;
+  max-width: 420px;
+}
+
 .panels-row {
   display: flex;
   flex-direction: column;
+  justify-content: space-around;
   align-items: center;
-  height: 700px;
-  gap: 40px; /* ODSTĘP między panelami */
+  width: 100%;
+  height: 100%;
+  padding: 0 10px;
+  gap: 50px; /* ODSTĘP między panelami */
 }
 
 .main-burger {
@@ -917,42 +960,14 @@ button:disabled {
 
 /* TŁO + GLOW gdy menu otwarte */
 .burger-btn.open {
-  background: linear-gradient(135deg, #e0ecee, #00eaff);
   border-color: #022d31;
-  box-shadow:
-    0 0 20px rgba(0, 234, 255, 0.8),
-    0 0 40px rgba(0, 234, 255, 0.5);
-  transform: scale(1.1);
   margin: 0 auto;
-  width: 50px;
+  width: 100%;
 }
 
 /* LINIE po otwarciu (X) */
 .burger-btn.open span {
   background: #002a33;
-}
-
-/* DODATKOWY EFEKT PULSU */
-.burger-btn.open::after {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border: 2px solid rgba(0, 234, 255, 0.6);
-  animation: burgerPulse 1.4s infinite;
-}
-
-@keyframes burgerPulse {
-  0% {
-    opacity: 0.8;
-    transform: scale(0.4);
-  }
-  70% {
-    opacity: 0;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-  }
 }
 
 .burger-panel {
@@ -971,7 +986,7 @@ button:disabled {
 ========================================= */
 
 .panel-card {
-  width: 420px;
+  width: 100%;
   padding: 26px 24px;
   border-radius: 18px;
 
@@ -1011,7 +1026,6 @@ button:disabled {
   }
 }
 
-
 /* =========================================
    PANEL TITLE
 ========================================= */
@@ -1047,8 +1061,6 @@ button:disabled {
   align-items: center;
   margin: 15px;
 }
-
-
 
 .input-value {
   margin-left: 10px;
@@ -1129,29 +1141,589 @@ button:disabled {
   transform: scale(0.98);
 }
 
+/* =========WODA I KALORIE JAKO WYKRES =========== */
+
+.dashboard-grid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
 .calories-summary {
   margin-bottom: 10px;
   font-size: 18px;
   font-weight: 500;
+  height: 300px;
+  padding: 10px auto;
 }
-
-
-
-/* =========WODA I KALORIE JAKO WYKRES =========== */
-
-.waterAndCaloriesCircle {
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  width: 100%;
-  height: 200px;
-}
-
 
 .water-summary {
- font-size:20px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  height: 300px;
+  padding: 10px auto;
 }
 
-.calories-summary {
+.hidden {
+  display: none !important;
+}
+.calories-summary:hover,
+.water-summary:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.65),
+    inset 0 0 22px rgba(0, 234, 255, 0.18),
+    0 0 22px rgba(0, 234, 255, 0.25);
+}
 
+.calories-summary > div:first-child,
+.water-summary > div:first-child {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #7fe6ff;
+}
+
+/* === DASHBOARD MINI PANELS === */
+.calories-summary,
+.water-summary {
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 180px;
+  min-height: 200px;
+  padding: 18px 16px;
+
+  /* GLASS LOOK */
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.85),
+    rgba(20, 20, 20, 0.75)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border-radius: 18px;
+
+  /* SUBTLE NEON */
+  border: 1px solid rgba(40, 199, 225, 0.35);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.55),
+    inset 0 0 18px rgba(0, 234, 255, 0.08);
+
+  color: #e6fbff;
+
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* === NAV TITLE BLOCK === */
+.title-block {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+/* linia użytkownika */
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* greeting */
+.user-row .greeting {
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* logout jako „chip / pill” */
+.user-row .logout {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 999px;
+}
+
+
+
+
+/*==================FOOTER =============================================================================================================*/
+
+
+.footer {
+  font-size: 30px;
+  color: white;
+}
+
+.footer-for-progress{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+
+/* =========== ==================================================================================================================MEDIA QUERY FOR 320PX ==================================================================================================*/
+
+@media (max-width: 320px) {
+  .navbar {
+    padding: 5px;
+    height: 80px;
+
+    gap: 6px;
+  }
+  
+
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
+
+  .greeting {
+    display: none;
+    font-size: 14px;
+    width: auto;
+  }
+
+  .burger-panel {
+    position: fixed;
+    top: 30px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+
+    padding: 16px;
+
+    background: black;
+    border-radius: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    z-index: 4000;
+  }
+
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+  }
+
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
+
+  .burger-btn {
+    font-size: 15px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
+
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
+
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
+
+  .logout,
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
+}
+
+@media (min-width: 321px) and (max-width: 480px) {
+  .navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 12px;
+  height: 80px;
+    
+    gap: 10px;
+  }
+
+  .titleApp {
+    font-size: 18px;
+  }
+
+  .greeting {
+    display: block;
+    font-size: 14px;
+    max-width: 160px;
+  }
+
+  .burger-btn {
+    font-size: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+
+  .panel-card,
+  .food-card,
+  .waterpanel {
+    max-width: 360px;
+    padding: 20px;
+  }
+  .waterAndCaloriesCircle {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .titleApp {
+    font-size: 18px;
+  }
+
+  .user-row {
+    gap: 10px;
+  }
+
+  .greeting {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .logout {
+    display: none;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  /* ===== NAVBAR ===== */
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px; /* 🔥 więcej powietrza góra/dół */
+  }
+
+  .nav-for-login {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    gap: 30px; /* 🔥 większy odstęp w poziomie */
+  }
+
+    .burger-btn {
+    font-size: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+
+  .titleApp {
+    font-size: 22px;
+    white-space: nowrap;
+    margin-left: 60px;
+  }
+
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* 🔥 równe odstępy tekst + button */
+    margin-left: auto;
+  }
+
+  .greeting {
+    display: none;
+  }
+
+  .logout {
+    height: 34px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+
+  /* ===== CONTENT ODSTĘP OD NAVBARA ===== */
+  .panels-only {
+    padding-top: 36px;
+  }
+
+  .panels-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* ===== DASHBOARD ===== */
+  .stats-wrapper {
+    margin-top: 32px; /* 🔥 sekcja, nie doklejka */
+  }
+
+  .waterAndCaloriesCircle {
+    gap: 40px; /* 🔥 więcej luzu między kaflami */
+    max-width: 520px;
+  }
+
+  .calories-summary,
+  .water-summary {
+    padding: 28px 24px; /* 🔥 „oddech” wewnątrz kart */
+  }
+
+  .stats-title {
+    margin-bottom: 12px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 768px) {
+  /* ===== NAVBAR ===== */
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 28px; /* 🔥 więcej powietrza góra/dół */
+  }
+
+  .nav-for-login {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    gap: 30px; /* 🔥 większy odstęp w poziomie */
+  }
+
+    .burger-btn {
+    font-size: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+
+  .titleApp {
+    font-size: 22px;
+    white-space: nowrap;
+    margin-left: 60px;
+  }
+
+  .user-row {
+    display: flex;
+    align-items: center;
+    gap: 16px; /* 🔥 równe odstępy tekst + button */
+    margin-left: auto;
+  }
+
+  .greeting {
+    font-size: 14px;
+    opacity: 0.9;
+    margin: 0;
+  }
+
+  .logout {
+    height: 34px;
+    padding: 0 18px;
+    font-size: 14px;
+  }
+
+  /* ===== CONTENT ODSTĘP OD NAVBARA ===== */
+  .panels-only {
+    padding-top: 36px;
+  }
+
+  .panels-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  /* ===== DASHBOARD ===== */
+  .stats-wrapper {
+    margin-top: 32px; /* 🔥 sekcja, nie doklejka */
+  }
+
+  .waterAndCaloriesCircle {
+    gap: 40px; /* 🔥 więcej luzu między kaflami */
+    max-width: 520px;
+  }
+
+  .calories-summary,
+  .water-summary {
+    padding: 28px 24px; /* 🔥 „oddech” wewnątrz kart */
+  }
+
+  .stats-title {
+    margin-bottom: 12px;
+  }
+}
+
+@media (min-width:770px) and (max-width:990px) {
+  .nav-for-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+    .burger-btn {
+    font-size: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+
+  .titleApp {
+    font-size: 20px;
+  }
+
+  .greeting {
+    font-size: 20px;
+    font-weight: 100;
+  }
+}
+
+
+@media (min-width:991px) and (max-width:1050px) {
+    .nav-for-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .titleApp {
+    font-size: 20px;
+  }
+
+  .greeting {
+    font-size: 20px;
+    font-weight: 100;
+  }
+    .burger-btn {
+    font-size: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+}
+
+@media (min-width:1051px) {
+      .nav-for-login {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+    .burger-btn {
+    font-size: 20px;
+    background-color: #000;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    background-color: none;
+  }
+
+  .titleApp {
+    font-size: 20px;
+  }
+
+  .greeting {
+    font-size: 20px;
+    font-weight: 100;
+  }
 }

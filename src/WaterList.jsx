@@ -15,7 +15,12 @@ export default function WaterList({ items }) {
         {items.map((item, index) => (
           <li key={index} className="history-item">
             <span>{item.name}</span>
-            <span className="history-amount">{item.amount} ml</span>
+            <span className="history-amount">
+              </span>
+              <span className="water-counter">
+
+              {item.amount} ml
+              </span>
           </li>
         ))}
       </ul>

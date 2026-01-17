@@ -12,10 +12,10 @@ import WaterPanel from "./WaterPanel";
 import WaterList from "./WaterList";
 import Menu from "./Menu";
 import FoodList from "./FoodList";
+import Footer from "./Footer";
 
 console.log("DEPLOY OK wellBodyApp-Final");
 export default function App() {
-
   const [regPassword, setRegPassword] = useState("");
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
@@ -35,6 +35,7 @@ export default function App() {
 
   const [waterItems, setWaterItems] = useState([]);
 
+  
   const {
     login,
     setLogin,
@@ -74,10 +75,12 @@ export default function App() {
   const openFoodPanel = () => {
     setFoodModel((prev) => prev ?? new FoodModel());
     setActivePanel("food");
+    setIsMenuOpen(false);
   };
 
   const openWaterPanel = () => {
     setActivePanel("water");
+    setIsMenuOpen(false);
   };
 
   const closePanel = () => {
@@ -170,26 +173,44 @@ export default function App() {
   const waterStrokeOffset = () =>
     circumference - (percentWater() / 100) * circumference;
 
+
+  const shouldShowFooter =
+    isLoggedIn &&
+    activePanel === null &&
+    (foodModel?.history?.length > 0 || waterItems.length > 0);
+
   return (
     <div className="main-icon">
       <nav className="navbar">
-        {isLoggedIn && (
-          <button
-            className="logout"
-            onClick={() => {
-              logout();
-              setIsMenuOpen(false);
-              closePanel();
-            }}
-          >
-            Wyloguj
-          </button>
-        )}
+        <div className="nav-for-login">
+          {isLoggedIn && (
+            <>
+              <div className="burger-menu">
+                <Menu
+                  isMenuOpen={isMenuOpen}
+                  onFoodSelect={openFoodPanel}
+                  onWaterSelect={openWaterPanel}
+                  onToggleMenu={() => setIsMenuOpen((p) => !p)}
+                />
+              </div>
+              <a className="titleApp">Aplikacja Fitness</a>
+              <button
+                className="logout"
+                onClick={() => {
+                  logout();
+                  setIsMenuOpen(false);
+                  closePanel();
+                }}
+              >
+                Wyloguj
+              </button>
+            </>
+          )}
 
-        <a className="titleApp">Fit-App</a>
-        <h1 className="greeting">
-          {isLoggedIn && `Witaj, ${login || "użytkowniku"}`}
-        </h1>
+          <h1 className="greeting">
+            {isLoggedIn && `Witaj, ${login || "użytkowniku"}`}
+          </h1>
+        </div>
 
         {!isLoggedIn && (
           <>
@@ -238,14 +259,6 @@ export default function App() {
           errors={errors}
         />
       )}
-      {isLoggedIn && (
-        <Menu
-          isMenuOpen={isMenuOpen}
-          onFoodSelect={openFoodPanel}
-          onWaterSelect={openWaterPanel}
-          onToggleMenu={() => setIsMenuOpen((p) => !p)}
-        />
-      )}
 
       {isLoggedIn && (
         <div className="panels-only">
@@ -269,156 +282,161 @@ export default function App() {
             )}
           </div>
 
-          {/*calorie widok */}
-
-          <div className="waterAndCaloriesCircle">
-            <div className="calories-summary">
-              Twój limit
-              <div
-                style={{
-                  position: "relative",
-                  width: "120px",
-                  height: "120px",
-                }}
-              >
-                <svg
-                  width="120"
-                  height="120"
-                  viewBox="0 0 120 120"
-                  style={{ transform: "rotate(-90deg)" }}
-                >
-                  <defs>
-                    {/* gradient */}
-                    <linearGradient
-                      id="calGradient"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="0%"
-                    >
-                      <stop offset="0%" stopColor="#ff7a18" />
-                      <stop offset="100%" stopColor="#ff3d00" />
-                    </linearGradient>
-
-                    {/* cień */}
-                    <filter
-                      id="shadow"
-                      x="-50%"
-                      y="-50%"
-                      width="200%"
-                      height="200%"
-                    >
-                      <feDropShadow
-                        dx="0"
-                        dy="2"
-                        stdDeviation="4"
-                        floodColor="#ff3d00"
-                        floodOpacity="0.35"
-                      />
-                    </filter>
-                  </defs>
-
-                  {/* tło */}
-                  <circle
-                    r={normalizedRadius}
-                    cx="60"
-                    cy="60"
-                    fill="transparent"
-                    stroke="#f1f1f1"
-                    strokeWidth={stroke}
-                  />
-
-                  {/* progress */}
-                  <circle
-                    r={normalizedRadius}
-                    cx="60"
-                    cy="60"
-                    fill="transparent"
-                    stroke="url(#calGradient)"
-                    strokeWidth={stroke}
-                    strokeDasharray={circumference}
-                    strokeDashoffset={strokeDashoffset}
-                    strokeLinecap="round"
-                    filter="url(#shadow)"
+          {/* 🔥 NOWY KONTENER */}
+          <div className="dashboard-grid">
+            <div className="waterAndCaloriesCircle">
+              <div className="stats-wrapper">
+                <div className="calories-summary">
+                  Calories
+                  <div
                     style={{
-                      transition:
-                        "stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)",
+                      position: "relative",
+                      width: "120px",
+                      height: "120px",
                     }}
-                  />
-                </svg>
+                  >
+                    <svg
+                      width="120"
+                      height="120"
+                      viewBox="0 0 120 120"
+                      style={{ transform: "rotate(-90deg)" }}
+                    >
+                      <defs>
+                        {/* gradient */}
+                        <linearGradient
+                          id="calGradient"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="0%"
+                        >
+                          <stop offset="0%" stopColor="#ff7a18" />
+                          <stop offset="100%" stopColor="#ff3d00" />
+                        </linearGradient>
 
-                <div
-                  className="calories-text"
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {totalCaloriesSum} / {CALORIES_LIMIT} kcal
+                        {/* cień */}
+                        <filter
+                          id="shadow"
+                          x="-50%"
+                          y="-50%"
+                          width="200%"
+                          height="200%"
+                        >
+                          <feDropShadow
+                            dx="0"
+                            dy="2"
+                            stdDeviation="4"
+                            floodColor="#ff3d00"
+                            floodOpacity="0.35"
+                          />
+                        </filter>
+                      </defs>
+
+                      {/* tło */}
+                      <circle
+                        r={normalizedRadius}
+                        cx="60"
+                        cy="60"
+                        fill="transparent"
+                        stroke="#f1f1f1"
+                        strokeWidth={stroke}
+                      />
+
+                      {/* progress */}
+                      <circle
+                        r={normalizedRadius}
+                        cx="60"
+                        cy="60"
+                        fill="transparent"
+                        stroke="url(#calGradient)"
+                        strokeWidth={stroke}
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        filter="url(#shadow)"
+                        style={{
+                          transition:
+                            "stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1)",
+                        }}
+                      />
+                    </svg>
+
+                    <div
+                      className="calories-text"
+                      style={{
+                        position: "absolute",
+                        top: "130%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {totalCaloriesSum} / {CALORIES_LIMIT} kcal
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+                {/*Woda circle*/}
 
-            {/*Woda circle*/}
+                <div className="water-summary">
+                  Woda
+                  <div
+                    style={{
+                      position: "relative",
+                      width: "120px",
+                      height: "120px",
+                    }}
+                  >
+                    <svg
+                      width="120"
+                      height="120"
+                      style={{ transform: "rotate(-90deg)" }}
+                    >
+                      {/* tło */}
+                      <circle
+                        stroke="#e0e0e0"
+                        fill="transparent"
+                        strokeWidth={stroke}
+                        r={normalizedRadius}
+                        cx={radius}
+                        cy={radius}
+                      />
 
-            <div className="water-summary">
-              Woda
-              <div
-                style={{
-                  position: "relative",
-                  width: "120px",
-                  height: "120px",
-                }}
-              >
-                <svg
-                  width="120"
-                  height="120"
-                  style={{ transform: "rotate(-90deg)" }}
-                >
-                  {/* tło */}
-                  <circle
-                    stroke="#e0e0e0"
-                    fill="transparent"
-                    strokeWidth={stroke}
-                    r={normalizedRadius}
-                    cx={radius}
-                    cy={radius}
-                  />
+                      {/* progress wody */}
+                      <circle
+                        stroke="dodgerblue"
+                        fill="transparent"
+                        strokeWidth={stroke}
+                        strokeDasharray={circumference}
+                        strokeDashoffset={waterStrokeOffset()}
+                        strokeLinecap="round"
+                        r={normalizedRadius}
+                        cx={radius}
+                        cy={radius}
+                        style={{ transition: "stroke-dashoffset 0.4s ease" }}
+                      />
+                    </svg>
 
-                  {/* progress wody */}
-                  <circle
-                    stroke="dodgerblue"
-                    fill="transparent"
-                    strokeWidth={stroke}
-                    strokeDasharray={circumference}
-                    strokeDashoffset={waterStrokeOffset()}
-                    strokeLinecap="round"
-                    r={normalizedRadius}
-                    cx={radius}
-                    cy={radius}
-                    style={{ transition: "stroke-dashoffset 0.4s ease" }}
-                  />
-                </svg>
-
-                {/* tekst w środku */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    fontWeight: "bold",
-                    fontSize: "14px",
-                  }}
-                >
-                  {totalWaterSum()} / {WATER_LIMIT} ml
+                    {/* tekst w środku */}
+                    <div
+                      className="water-text"
+                      style={{
+                        position: "absolute",
+                        top: "130%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                      }}
+                    >
+                      {totalWaterSum()} / {WATER_LIMIT} ml
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+          {shouldShowFooter && <Footer />}
 
           {activePanel === null && (
             <div className="products-lists">

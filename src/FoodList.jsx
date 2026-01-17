@@ -14,9 +14,10 @@ export default function FoodList({ items }) {
       <ul className="history-list">
         {items.map((item, index) => (
           <li key={index} className="history-item">
-            <span>{item.name}</span>
             <span className="history-amount">
-              {item.weight} g · {item.calories} kcal
+              <div className="history-name">{item.name}</div>
+              <div className="history-weight">{item.weight} g</div>
+              <div className="history-calories">{item.calories} kcal</div>
             </span>
           </li>
         ))}
