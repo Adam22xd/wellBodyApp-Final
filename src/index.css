@@ -101,14 +101,13 @@ body {
 
 .account,
 .register {
-  font-size: 20px;
-  width: 180px;
+  font-size: 15px;
+  width: 380px;
   height: 40px;
   border: none;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.7s ease-in-out;
-  margin-right: 250px;
 }
 
 .account:hover,
