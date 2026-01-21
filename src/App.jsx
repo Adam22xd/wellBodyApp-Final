@@ -14,9 +14,7 @@ import Menu from "./Menu";
 import FoodList from "./FoodList";
 import Footer from "./Footer";
 
-console.log("DEPLOY OK wellBodyApp-Final");
 export default function App() {
-  const [regPassword, setRegPassword] = useState("");
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
 
@@ -37,27 +35,38 @@ export default function App() {
 
   
   const {
+    // logowanie
     login,
     setLogin,
-    password,
-    setPassword,
+    loginPassword,
+    setLoginPassword,
+
+    // rejestracja
     name,
     setName,
     surname,
     setSurname,
+    passwordReg,
+    setPasswordReg,
     errors,
     isLoggedIn,
+
     register,
-    logout,
     loginAllFunc,
+    logout,
   } = useAuth();
 
+  /* =========LOGIN======*/
+  
   const handleLogin = () => {
-    if (loginAllFunc()) {
+    if (loginUser()) {
       alert("Zalogowano pomyślnie");
       setIsLoginVisible(false);
     }
   };
+  
+  /* =========REJESTRACJA======*/
+
 
   const handleRegister = () => {
     if (register()) {
@@ -65,7 +74,7 @@ export default function App() {
       stats.showUsersData();
       setName("");
       setSurname("");
-      setRegPassword("");
+      setPasswordReg("");
       setIsRegisterVisible(false);
     }
   };
@@ -179,6 +188,12 @@ export default function App() {
     activePanel === null &&
     (foodModel?.history?.length > 0 || waterItems.length > 0);
 
+
+
+
+
+
+
   return (
     <div className="main-icon">
       <nav className="navbar">
@@ -236,30 +251,28 @@ export default function App() {
           </>
         )}
       </nav>
-
+     
       {isLoginVisible && (
         <LoginForm
           login={login}
-          password={password}
+          password={loginPassword}
           setLogin={setLogin}
-          setPassword={setPassword}
+          setPassword={setLoginPassword}
           onLogin={handleLogin}
         />
       )}
-
       {isRegisterVisible && (
         <RegisterForm
           name={name}
           surname={surname}
-          regPassword={regPassword}
+          password={passwordReg}
           setName={setName}
           setSurname={setSurname}
-          setRegPassword={setRegPassword}
-          onRegister={handleRegister}
+          setPasswordReg={setPasswordReg}
           errors={errors}
+          register={handleRegister}
         />
       )}
-
       {isLoggedIn && (
         <div className="panels-only">
           <div className="panels-row">

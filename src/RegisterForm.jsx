@@ -2,17 +2,23 @@
 export default function RegisterForm({
   name,
   surname,
-  regPassword,
+  passwordReg,
   setName,
   setSurname,
-  setRegPassword,
-  onRegister,
+  setPasswordReg,
   errors,
+  register,
 }) {
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onRegister();
-  };
+const handleSubmit = (e) => {
+  e.preventDefault();
+
+  const success = register();
+  if (success) {
+    alert("Rejestracja zakończona sukcesem!");
+  }
+
+};
+
 
   return (
     <form onSubmit={handleSubmit}>
@@ -41,11 +47,11 @@ export default function RegisterForm({
           <input
             type="password"
             placeholder="Hasło"
-            value={regPassword}
+            value={passwordReg}
             className="passwordforregister"
-            onChange={(e) => setRegPassword(e.target.value)}
+            onChange={(e) => setPasswordReg(e.target.value)}
           />
-          {errors?.password && <div className="error">{errors.password}</div>}
+          {errors?.passwordReg && <div className="error">{errors.passwordReg}</div>}
 
           <button type="submit" className="sendregister">
             Zarejestruj się

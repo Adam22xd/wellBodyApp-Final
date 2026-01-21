@@ -8,6 +8,8 @@ class RegisterStats {
     localStorage.setItem("users", JSON.stringify(this.users));
   }
 
+  
+
   addUser(name, surname, password) {
     const newUser = { name, surname, password };
     this.users.push(newUser);
