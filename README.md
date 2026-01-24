@@ -1,23 +1,69 @@
-<<<<<<< HEAD
-# React + Vite
+# 💧🍎 Aplikacja do monitorowania nawodnienia i kalorii
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplikacja webowa umożliwiająca monitorowanie dziennego spożycia wody oraz kalorii.
+Projekt stworzony w React z wykorzystaniem Firebase do obsługi autoryzacji użytkowników.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔍 Opis aplikacji
 
-## React Compiler
+Użytkownik po rejestracji i zalogowaniu ma dostęp do panelu, w którym może:
+- zapisywać ilość wypitej wody
+- zapisywać spożyte kalorie
+- zarządzać danymi w ramach własnego konta
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+Interfejs aplikacji oparty jest o burger menu, które umożliwia nawigację pomiędzy
+dwoma głównymi zakładkami: **Woda** oraz **Kalorie**.
 
-Note: This will impact Vite dev & build performances.
+Aplikacja została zaprojektowana w podejściu **mobile-first** i jest w pełni
+responsywna na urządzenia mobilne oraz desktopowe.
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# wellBodyApp-Final
-finalna wersja
->>>>>>> 87bf6cff2194932d5879cf796e7e3caf2abffa7d
+## ⚙️ Funkcjonalności
+
+- Rejestracja i logowanie użytkownika (Firebase Authentication)
+- Panel użytkownika po zalogowaniu
+- Burger menu z nawigacją
+- Dodawanie ilości wypitej wody
+- Dodawanie spożytych kalorii
+- Przekazywanie danych pomiędzy komponentami
+- Zarządzanie stanem aplikacji w React
+- Ochrona widoków dla zalogowanych użytkowników
+- Responsywny interfejs (mobile & desktop)
+
+---
+
+## 🛠️ Technologie
+
+- React
+- JavaScript (ES6+)
+- Firebase (Authentication)
+- HTML5
+- CSS3
+
+---
+
+## 👨‍💻 Autor
+
+Projekt wykonany samodzielnie — od koncepcji po implementację — z wykorzystaniem
+wsparcia AI na etapie nauki i rozwoju aplikacji.
+
+---
+
+## 🚀 TODO / Planowany rozwój
+
+- Zapisywanie danych w bazie danych Firebase
+- Statystyki dzienne i tygodniowe
+- Wykresy nawodnienia i kalorii
+- Ustalanie dziennych celów
+- Edycja i usuwanie wpisów
+- Testy komponentów
+
+---
+
+## 📦 Uruchomienie projektu lokalnie
+
+```bash
+npm install
+npm run dev
