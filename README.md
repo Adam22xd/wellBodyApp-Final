@@ -1,3 +1,21 @@
+## 🗂️ Repository
+
+https://github.com/Adam22xd/wellBodyApp-Final.git
+
+# Live Demo //
+
+https://well-body-app-final.vercel.app
+
+## 🧰 Tech Stack
+
+- ⚛️ React
+- 🟦 TypeScript
+- ⚡ Vite
+- 🎨 CSS / Tailwind (jeśli używasz)
+- 🌐 HTML5
+
+---
+
 # 💧🍎 Aplikacja do monitorowania nawodnienia i kalorii
 
 Aplikacja webowa umożliwiająca monitorowanie dziennego spożycia wody oraz kalorii.
@@ -8,6 +26,7 @@ Projekt stworzony w React z wykorzystaniem Firebase do obsługi autoryzacji uży
 ## 🔍 Opis aplikacji
 
 Użytkownik po rejestracji i zalogowaniu ma dostęp do panelu, w którym może:
+
 - zapisywać ilość wypitej wody
 - zapisywać spożyte kalorie
 - zarządzać danymi w ramach własnego konta
@@ -37,7 +56,8 @@ responsywna na urządzenia mobilne oraz desktopowe.
 ## 🛠️ Technologie
 
 - React
-- JavaScript (ES6+)
+- TypeScript
+- Vite
 - Firebase (Authentication)
 - HTML5
 - CSS3
@@ -67,3 +87,4 @@ wsparcia AI na etapie nauki i rozwoju aplikacji.
 ```bash
 npm install
 npm run dev
+```
