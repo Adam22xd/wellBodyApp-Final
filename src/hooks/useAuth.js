@@ -1,138 +1,62 @@
 import { useState } from "react";
-import stats from "./RegisterStats";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut
+} from "firebase/auth";
+import { auth } from "./firebase";
 
 export default function useAuth() {
-
-  // 🔐 LOGOWANIE
-  const [login, setLogin] = useState("");
+  const [email, setEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-
-  // 📝 REJESTRACJA
-  const [name, setName] = useState("");
-  const [surname, setSurname] = useState("");
   const [passwordReg, setPasswordReg] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-
-  /// OBSŁUGA BŁEDÓW
-  const [errors, setErrors] = useState({
-    name: "",
-    surname: "",
-    passwordReg: "",
-  });
-
-
-  // ZALOGOWANIE SIĘ
-
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("login")
-  );
-
-  // BŁEDY LOG/REJ
-  const [loginError, setLoginError] = useState("");
-
-
-  // =========================
+  // =====================
   // 📝 REJESTRACJA
-  // =========================
-  const register = () => {
-    const newErrors = { name: "", surname: "", passwordReg: "" };
-    let hasError = false;
-
-    const cleanName = name.trim();
-    const cleanSurname = surname.trim();
-    const cleanPassword = passwordReg.trim();
-
-    if (cleanName.length < 3) {
-      newErrors.name = "Imię musi mieć co najmniej 3 znaki.";
-      hasError = true;
-    }
-
-    if (cleanSurname.length < 3) {
-      newErrors.surname = "Nazwisko musi mieć co najmniej 3 znaki.";
-      hasError = true;
-    }
-
-    if (cleanPassword.length < 8) {
-      newErrors.passwordReg = "Hasło musi mieć co najmniej 8 znaków.";
-      hasError = true;
-    }
-
-    setErrors(newErrors);
-    if (hasError) return false;
-
-    // ✅ zapis użytkownika
+  // =====================
+  const register = async (email, password) => {
     try {
-      stats.addUser(cleanName, cleanSurname, cleanPassword);
+      await createUserWithEmailAndPassword(auth, email, password);
+      await signOut(auth);
+      return { ok: true };
     } catch (err) {
-      alert("Użytkownik już istnieje");
-      return false;
+      return { ok: false, code: err.code };
     }
-
-    // (opcjonalnie auto-login)
-    localStorage.setItem("login", cleanName);
-    setIsLoggedIn(true)
-
-    // 🔥 reset formularza
-    setName("");
-    setSurname("");
-    setPasswordReg("");
-
-    return true;
   };
 
-  // =========================
+  // =====================
   // 🔐 LOGOWANIE
-  // =========================
-  const loginUser = () => {
-    if (!login.trim() || !loginPassword.trim()) {
-      setLoginError("Pola nie mogą być puste");
+  // =====================
+  const loginUser = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, loginPassword);
+      setIsLoggedIn(true);
+      return true;
+    } catch (err) {
+      console.log("Firebase login error:", err.code);
       return false;
     }
-
-    if (stats.checkLogin(login, loginPassword)) {
-      localStorage.setItem("login", login);
-      setIsLoggedIn(true);
-      setLogin("");
-      setLoginPassword("");
-      setLoginError("");
-      return true;
-    }
-
-    setLoginError("Niepoprawny login lub hasło");
-    return false;
   };
 
-
-
-  // =========================
+  // =====================
   // 🚪 WYLOGOWANIE
-  // =========================
-  const logout = () => {
-    localStorage.removeItem("login");
+  // =====================
+  const logout = async () => {
+    await signOut(auth);
     setIsLoggedIn(false);
   };
 
-
-
   return {
-    // logowanie
-    login,
-    setLogin,
+    email,
+    setEmail,
     loginPassword,
     setLoginPassword,
-
-    // rejestracja
-    name,
-    setName,
-    surname,
-    setSurname,
     passwordReg,
     setPasswordReg,
-    errors,
-    isLoggedIn,
-    loginUser,
-    loginError,
     register,
+    loginUser,
     logout,
+    isLoggedIn,
   };
 }
