@@ -1,19 +1,19 @@
 import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-import { useState, useEffect } from "react";
-import useAuth from "./hooks/useAuth";
+import { useState } from "react";
+import { useAuthContext } from "./context/AuthContext.jsx";
 
-import LoginForm from "./LoginForm";
-import RegisterForm from "./RegisterForm";
+import LoginForm from "./LoginForm.js";
+import RegisterForm from "./RegisterForm.js";
 
+import FoodPanel from "./FoodPanel.js";
 import FoodModel from "./hooks/FoodModel";
-import FoodPanel from "./FoodPanel";
-import WaterPanel from "./WaterPanel";
-import WaterList from "./WaterList";
-import Menu from "./Menu";
-import FoodList from "./FoodList";
-import Footer from "./Footer";
+import WaterPanel from "./WaterPanel.jsx";
+import WaterList from "./WaterList.jsx";
+import Menu from "./Menu.js";
+import Footer from "./Footer.js";
+import style_html from "js-beautify/js/src/html/index.js";
 
 export default function App() {
   const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -21,14 +21,26 @@ export default function App() {
 
   const [activePanel, setActivePanel] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [foodModel, setFoodModel] = useState(null);
 
   const [waterForm, setWaterForm] = useState({
     name: "",
     amount: "",
   });
 
+  /*=========FOOD MODEL i TYP ============== */
+  const [foodItems, setFoodItems] = useState([]);
+  const [newFood, setNewFood] = useState({
+    name: "",
+    weight: 0,
+    calories: 0,
+  });
+
+  /* ========== WATER MODEL I TYP =========== */
   const [waterItems, setWaterItems] = useState([]);
+  const [newWater, setNewWater] = useState({
+    name: "",
+    amount: 0,
+  });
 
   const {
     email,
@@ -37,14 +49,11 @@ export default function App() {
     setLoginPassword,
     passwordReg,
     setPasswordReg,
-    isLoggedIn,
     register,
     loginUser,
     logout,
-  } = useAuth();
-
-
-
+    isLoggedIn,
+  } = useAuthContext();
 
   /* ========= LOGIN ========= */
 
@@ -58,8 +67,8 @@ export default function App() {
 
   /* ========= REJESTRACJA ========= */
 
-  const handleRegister = async (email,password) => {
-    const success = await register(email,password);
+  const handleRegister = async (email, password) => {
+    const success = await register(email, password);
     if (success) {
       alert("Zarejestrowano pomyślnie");
       setIsRegisterVisible(false);
@@ -70,170 +79,303 @@ export default function App() {
 
   /* ========= PANELS ========= */
 
-  const openFoodPanel = () => {
-    setFoodModel((prev) => prev ?? new FoodModel());
-    setActivePanel("food");
-    setIsMenuOpen(false);
-  };
-
-  const openWaterPanel = () => {
-    setActivePanel("water");
-    setIsMenuOpen(false);
-  };
+  /* === CLOSE BUTTON === */
 
   const closePanel = () => {
     setActivePanel(null);
   };
 
+  /* ======== TOGGLE FOOD BUTTON ============ */
+
+  const toggleFoodPanel = () => {
+    setActivePanel((prev) => (prev === "food" ? null : "food"));
+  };
+
   /* ========= FOOD ========= */
 
   const addProduct = () => {
-    setFoodModel((prev) => {
-      if (!prev) return prev;
+    if (!newFood.name.trim() || !newFood.weight || !newFood.calories) return;
 
-      const updated = new FoodModel(prev.name, prev.weight, prev.calories);
-      updated.history = [...prev.history];
-      updated.add(updated.name, updated.weight, updated.calories);
+    setFoodItems((prev) => [...prev, newFood]);
 
-      updated.name = "";
-      updated.weight = "";
-      updated.calories = "";
-
-      return updated;
+    setNewFood({
+      name: "",
+      weight: 0,
+      calories: 0,
     });
-
-    closePanel();
+    setActivePanel(null);
   };
 
-  const updateModel = (field, value) => {
-    setFoodModel((prev) => {
-      if (!prev) return prev;
-
-      const updated = new FoodModel(prev.name, prev.weight, prev.calories);
-      updated.history = [...prev.history];
-      updated[field] = value;
-
-      return updated;
-    });
-  };
-
-  /* ========= WATER ========= */
-
-  const updateWaterForm = (field, value) => {
-    setWaterForm((prev) => ({
+  const updateFood = (field, value) => {
+    setNewFood((prev) => ({
       ...prev,
       [field]: value,
     }));
   };
 
-  const addWater = () => {
-    if (!waterForm.name || !waterForm.amount) return;
+  /* ========= WATER ========= */
+const addWater = () => {
+  console.log("klik");
+  console.log(waterForm);
 
-    setWaterItems((prev) => [...prev, { ...waterForm }]);
-    setWaterForm({ name: "", amount: "" });
-    closePanel();
+  if (!waterForm.name.trim() || Number(waterForm.amount) <= 0) return;
+
+  const newItem = {
+    name: waterForm.name.trim(),
+    amount: Number(waterForm.amount),
+  };
+
+  setWaterItems((prev) => [...prev, newItem]);
+
+  setWaterForm({ name: "", amount: "" });
+  setActivePanel(null);
+};
+
+
+  const updateWater = () => {
+    setActivePanel((prev) => (prev === "water" ? null : "water"));
   };
 
   /* ========= UI ========= */
 
   return (
     <div className="main-icon">
-      <nav className="navbar">
-        {isLoggedIn === true && (
-          <>
-            <Menu
-              isMenuOpen={isMenuOpen}
-              onFoodSelect={openFoodPanel}
-              onWaterSelect={openWaterPanel}
-              onToggleMenu={() => setIsMenuOpen((p) => !p)}
-            />
-            <button
-              className="logout"
-              onClick={() => {
-                setIsMenuOpen(false);
-                logout();
-                closePanel();
-              }}
-            >
-              Wyloguj
-            </button>
-          </>
+      <div className="app-wrapper">
+        {/* ========= NAVBAR ========= */}
+        <nav className="navbar">
+          <div className="nav-left">
+            <div className="logo">
+              <div className="logo-icon">💻</div>
+              <span className="logo-text">Fitness List</span>
+            </div>
+          </div>
+
+          <div className="nav-right">
+            {isLoggedIn ? (
+              <>
+                <span className="user-badge">PL</span>
+
+                <button
+                  className="logout-btn"
+                  onClick={async () => {
+                    console.log("klik");
+                    await logout();
+                    setIsMenuOpen(false);
+                    // alert("klik działa");
+                  }}
+                >
+                  Wyloguj się
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="log-btn"
+                  onClick={() => {
+                    setIsLoginVisible(true);
+                    setIsRegisterVisible(false);
+                  }}
+                >
+                  <span className="log-title"> Zaloguj </span>
+                </button>
+
+                <button
+                  className="reg-btn"
+                  onClick={() => {
+                    setIsRegisterVisible(true);
+                    setIsLoginVisible(false);
+                  }}
+                >
+                  <span className="reg-title">Zarejestruj</span>
+                </button>
+              </>
+            )}
+          </div>
+        </nav>
+
+        {/* HEADER LEPSZY WYGLĄD */}
+        {!isLoginVisible && !isRegisterVisible && !isLoggedIn && (
+          <header className="hero">
+            <div className="hero-left">
+              <h1>Kontroluj dietę i nawodnienie</h1>
+              <p>
+                Prosta aplikacja do monitorowania kalorii i ilości wypitej wody.
+              </p>
+
+              {!isLoggedIn && (
+                <div className="hero-buttons">
+                  <button
+                    className="primary-btn"
+                    onClick={() => setIsRegisterVisible(true)}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M3 21c0-4 3-7 6-7s6 3 6 7"></path>
+                      <line x1="18" y1="8" x2="18" y2="14"></line>
+                      <line x1="15" y1="11" x2="21" y2="11"></line>
+                    </svg>
+                    Zacznij teraz
+                  </button>
+
+                  <button class="register-btn">
+                    <span onClick={() => setIsLoginVisible(true)}>
+                      Zaloguj się
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="hero-right">
+              <i className="fa-solid fa-chart-line"></i>
+            </div>
+          </header>
         )}
 
-        <h1 className="greeting">
-          {isLoggedIn === true && `Witaj, użytkowniku`}
-        </h1>
+        {/* ========= MODAL SYSTEM ========= */}
 
-        {!isLoggedIn && (
-          <>
-            <button
+        {(isLoginVisible || isRegisterVisible) && (
+          <div className="modal-wrapper">
+            {/* Overlay */}
+            <div
+              className="overlay"
               onClick={() => {
-                setIsLoginVisible(true);
+                setIsLoginVisible(false);
                 setIsRegisterVisible(false);
               }}
-            >
-              Zaloguj się
-            </button>
+            />
 
-            <button
-              onClick={() => {
-                setIsRegisterVisible(true);
-                setIsLoginVisible(false);
-              }}
-            >
-              Zarejestruj się
-            </button>
-          </>
+            {/* Modal Content */}
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              {isLoginVisible && (
+                <LoginForm
+                  login={email}
+                  password={loginPassword}
+                  setLogin={setEmail}
+                  setPassword={setLoginPassword}
+                  onLogin={handleLogin}
+                  logout={() => setIsLoginVisible(false)}
+                />
+              )}
+
+              {isRegisterVisible && (
+                <RegisterForm
+                  email={email}
+                  setEmail={setEmail}
+                  passwordReg={passwordReg}
+                  setPasswordReg={setPasswordReg}
+                  register={handleRegister}
+                />
+              )}
+            </div>
+          </div>
         )}
-      </nav>
+      </div>
 
-      {isLoginVisible && (
-        <LoginForm
-          login={email}
-          password={loginPassword}
-          setLogin={setEmail}
-          setPassword={setLoginPassword}
-          onLogin={handleLogin}
-        />
-      )}
-
-      {isRegisterVisible && (
-        <RegisterForm
-          email={email}
-          setEmail={setEmail}
-          passwordReg={passwordReg}
-          setPasswordReg={setPasswordReg}
-          register={handleRegister}
-        />
-      )}
-
-      {isLoggedIn === true && (
-        <div className="panels-only">
-          {activePanel === "food" && (
-            <FoodPanel
-              model={foodModel}
-              onClose={closePanel}
-              toAdd={addProduct}
-              onUpdate={updateModel}
-            />
-          )}
-
-          {activePanel === "water" && (
-            <WaterPanel
-              form={waterForm}
-              onUpdate={updateWaterForm}
-              onAdd={addWater}
-              onClose={closePanel}
-            />
-          )}
-        </div>
-      )}
-
-      {activePanel === null && isLoggedIn && (
+      {isLoggedIn && (
         <>
-          <FoodList items={foodModel?.history} />
-          <WaterList items={waterItems} />
-          <Footer />
+          {/* HEADER */}
+
+          <header className="dashboard-header">
+            <h1 className="dashboard-title">Dzisiaj</h1>
+          </header>
+          <div className="dashboard-cards">
+            {/* ======================================================================================================= POSIŁKI ===== */}
+            <div className="dashboard-card">
+              <h2>Posiłki</h2>
+              <div className="card-icon">
+                <i className="fa-solid fa-utensils"></i>
+              </div>
+
+              <p>
+                {foodItems.length
+                  ? `${foodItems.length} posiłków`
+                  : "Brak posiłków"}
+              </p>
+
+              {foodItems.length > 0 && (
+                <div className="food-list">
+                  {foodItems.map((item, index) => (
+                    <div key={index} className="food-item">
+                      <strong>{item.name}</strong>
+                      <span> {item.weight} g</span>
+                      <span> {item.calories} kcal</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activePanel === "food" && (
+                <FoodPanel
+                  model={newFood}
+                  onClose={closePanel}
+                  onUpdate={updateFood}
+                  onAdd={addProduct}
+                />
+              )}
+              <button className="toggle-btn" onClick={toggleFoodPanel}>
+                {" "}
+                + Add
+              </button>
+            </div>
+
+            {/* ============================================================================================================== NAPOJE ===== */}
+            <div className="dashboard-card">
+              <h2>Napoje</h2>
+              <div className="card-icon">
+                <i className="fa-solid fa-glass-water"></i>
+              </div>
+
+              <p>
+                {waterItems.length
+                  ? `${waterItems.length} napojów`
+                  : "Brak napojów"}
+              </p>
+                  
+              {waterItems.length > 0 && (
+                <div className="water-list">
+                  {waterItems.map((item, index) => (
+                    <div key={index} className="water-item">
+                      <strong>{item.name}</strong>
+                      <span> {item.amount} ml</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {activePanel === "water" && (
+                <WaterPanel
+                  form={newWater}
+                  onUpdate={updateWater}
+                  onAdd={addWater}
+                  onClose={closePanel}
+                />
+              )}
+
+              <button className="toggle-btn" onClick={updateWater}>
+                {" "}
+                + Add
+              </button>
+            </div>
+          </div>
+
+          {/* ===== FLOATING + BUTTON ===== */}
+          <button
+            className="floating-add-btn"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+          >
+            +
+          </button>
         </>
       )}
     </div>

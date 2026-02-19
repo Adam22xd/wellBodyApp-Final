@@ -1,4 +1,22 @@
-export default function WaterPanel({ form, onUpdate, onAdd, onClose }) {
+export interface WaterModel {
+  name: string,
+  amount:number,
+};
+
+
+interface WaterProps {
+  form: WaterModel;
+  onUpdate: (field: keyof WaterModel, value: string | number) => void;
+  onAdd: () => void;
+  onClose: () => void;
+}
+
+export default function WaterPanel({
+  form,
+  onUpdate,
+  onAdd,
+  onClose,
+}: WaterProps) {
   if (!form) return null;
 
   return (
@@ -7,7 +25,7 @@ export default function WaterPanel({ form, onUpdate, onAdd, onClose }) {
         ✕
       </button>
 
-      <h2 className="panel-title">Panel wody</h2>
+      <h2 className="panel-title">Napoje</h2>
 
       <div className="panel-row">
         <label>Nazwa</label>
@@ -15,7 +33,7 @@ export default function WaterPanel({ form, onUpdate, onAdd, onClose }) {
           className="input-value"
           type="text"
           value={form.name}
-          onChange={(e) => onUpdate("name", e.target.value)}
+          onChange={(e) => onUpdate("name", String(e.target.value))}
         />
       </div>
 
@@ -25,11 +43,12 @@ export default function WaterPanel({ form, onUpdate, onAdd, onClose }) {
           className="input-value"
           type="number"
           value={form.amount}
-          onChange={(e) => onUpdate("amount", e.target.value)}
+          onChange={(e) => onUpdate("amount", (e.target.value))}
         />
       </div>
 
-      <button className="primary-btn"  onClick={onAdd}>
+      <button className="primary-btn" onClick={onAdd}>
+        
         Dodaj napój
       </button>
     </div>

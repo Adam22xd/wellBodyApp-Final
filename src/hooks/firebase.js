@@ -1,6 +1,9 @@
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-// analytics jest opcjonalne – możesz dodać później
+import {
+    getAuth,
+    setPersistence,
+    browserLocalPersistence
+} from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCdtR-WTWftSIbcWdqA7U9VQmlTN4i9GgY",
@@ -13,5 +16,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-// 🔥 TO JEST KLUCZOWA LINIJKA
 export const auth = getAuth(app);
+
+// 🔥 WAŻNE — dodaj await i obsługę błędu
+setPersistence(auth, browserLocalPersistence)
+    .then(() => {
+        console.log("Persistence ustawione");
+    })
+    .catch((err) => {
+        console.error("Persistence error:", err);
+    });

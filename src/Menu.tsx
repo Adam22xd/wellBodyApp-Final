@@ -1,12 +1,20 @@
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
+interface MenuProps {
+  isMenuOpen: boolean;
+  onToggleMenu: () => void;
+  onFoodSelect: () => void;
+  onWaterSelect: () => void;
+}
+
 export default function Menu({
   isMenuOpen,
   onToggleMenu,
   onFoodSelect,
   onWaterSelect,
-}) {
+}: MenuProps) {
   return (
+
     <div className="burger-menu">
       {/* PRZYCISK ZAWSZE WIDOCZNY */}
       <button

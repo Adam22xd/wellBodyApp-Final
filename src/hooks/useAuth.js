@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "firebase/auth";
 import { auth } from "./firebase";
 
@@ -10,7 +11,18 @@ export default function useAuth() {
   const [email, setEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [passwordReg, setPasswordReg] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(null);
+
+
+    // ✅ Synchronizacja z Firebase (najważniejsza poprawka)
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsLoggedIn(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   // =====================
   // 📝 REJESTRACJA
@@ -31,7 +43,6 @@ export default function useAuth() {
   const loginUser = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, loginPassword);
-      setIsLoggedIn(true);
       return true;
     } catch (err) {
       console.log("Firebase login error:", err.code);
@@ -43,9 +54,12 @@ export default function useAuth() {
   // 🚪 WYLOGOWANIE
   // =====================
   const logout = async () => {
+    console.log("logout start");
     await signOut(auth);
-    setIsLoggedIn(false);
+    console.log("logout DONE");
   };
+
+
 
   return {
     email,

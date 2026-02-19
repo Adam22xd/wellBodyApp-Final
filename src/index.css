@@ -2,242 +2,282 @@
    GLOBALNE STYLOWANIE
 ========================================= */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body {
-    background-color: black;
-    font-family: "Poppins", sans-serif;
+ body {
+   overflow-y: scroll;
+  margin: 0;
+  height: 100vh;
+  font-family: "Inter", sans-serif;
 }
+
+/* MAIN */
 
 .main-icon {
-    position: relative;
-    width: 100%;
-    min-height: 100vh;
-    background-color: rgb(16, 117, 148);
-    padding-bottom: 50px;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+
+  /* Nowoczesne ciemne tło */
+  background:
+    radial-gradient(
+      circle at 20% 30%,
+      rgba(79, 140, 255, 0.15),
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(124, 77, 255, 0.15),
+      transparent 40%
+    ),
+    linear-gradient(135deg, #0f0f18, #1a1a2e);
+
+  padding-bottom: 80px;
+  overflow: hidden;
+}
+@keyframes backgroundMove {
+  0% {
+    background-position:
+      0% 50%,
+      100% 50%,
+      0% 0%;
+  }
+  50% {
+    background-position:
+      10% 40%,
+      90% 60%,
+      0% 0%;
+  }
+  100% {
+    background-position:
+      0% 50%,
+      100% 50%,
+      0% 0%;
+  }
 }
 
-/* =========================================
-   NAVBAR
-========================================= */
-
+/* NAVBAR */
 .navbar {
-    position: relative;
-    z-index: 1000;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    border-bottom: 2px solid white;
-    background-color: black;
-    height: 80px;
-    padding: 10px 0;
-    gap: 10px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  width: 100%;
+  height: 70px;
+  padding: 0 40px;
+
+  background: rgba(8, 15, 30, 0.9);
+  backdrop-filter: blur(12px);
+  gap: 20px;
+  color: white;
 }
 
-.nav-for-login {
-    display: flex;
-    justify-content: space-around;
+.nav-left {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+/* Burger menu */
+
+.menu-for-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
 }
 
-.title {
-    color: white;
-    font-size: 25px;
-    width: 800px;
-    display: flex;
-    justify-content: start;
-    align-items: center;
+/* LOGO */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.title-app {
-    font-size: 20px;
-    justify-content: space-between;
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #2f80ed, #56ccf2);
+  border-radius: 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 90000;
+  font-size: 16px;
+  margin-left: 20px;
 }
 
-.titleApp {
-    color: white;
-    font-size: 30px;
-    width: 200px;
-    margin-left: 30px;
+.logo-text {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-.sidebar {
-    width: 350px;
-    height: 300px;
-    color: #000;
-    font-size: 20px;
+/* PRAWA STRONA */
+.nav-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 550px;
+  height: 50px;
+  gap: 15px;
 }
 
-.container {
-    display: flex;
+/* Mały badge */
+span .user-badge {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  font-size: 14px;
 }
 
-.menuApp {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px auto;
-    background: #13a520;
-    width: 150px;
-    height: 30px;
-    color: white;
-    border-radius: 8px;
-    transition: 0.2s;
+.logout-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-height: 10px;
+  margin-top: 20px;
+  z-index: 9999;
 }
 
-.menuApp:hover {
-    transform: scale(0.9);
+.logout-btn:hover {
+  cursor: pointer;
 }
 
-.logout {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px auto;
-    background: #ff4444;
-    width: 150px;
-    height: 30px;
-    color: white;
-    border-radius: 8px;
-    transition: 0.2s;
+/* Loguj przycisk */
+.log-btn {
+  padding: 8px 22px;
+  border-radius: 25px;
+  margin-top: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  width: 250px;
+  height: 40px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.logout:hover {
-    transform: scale(0.9);
+.log-title {
+  font-size: 20px;
 }
 
-.greeting {
-    color: white;
-    width: 280px;
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-    transition: 0.3s;
+.log-btn:hover {
+  background: linear-gradient(90deg, #2f80ed, #56ccf2);
 }
 
-.greeting:hover {
-    transform: scale(1.05);
+/* rejstruj przycisk */
+.reg-btn {
+  padding: 8px 22px;
+  border-radius: 25px;
+  margin-top: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  width: 250px;
+  height: 40px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.account,
-.register {
-    font-size: 10px;
-    width: 550px;
-    height: 40px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.7s ease-in-out;
+.reg-title {
+  font-size: 20px;
 }
 
-.account:hover,
-.register:hover {
-    background: linear-gradient(#2193b0, #6dd5ed);
-    transform: scale(1.4);
-    transition: all 0.3s ease-in-out;
+.reg-btn:hover {
+  background: linear-gradient(90deg, #2f80ed, #56ccf2);
 }
 
-/* =========================================
-   LOGOWANIE (JSX)
-========================================= */
-.app-container {
-    max-width: 480px;
-    margin: 40px auto;
-    font-family: Arial, sans-serif;
-    padding: 20px;
+/* =========================================HEADER STYLOWANIE LEPSZY WYGLĄD =========================================*/
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 100px 60px;
+  min-height: 60vh;
 }
 
-.form {
-    background: #f8f8f8;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.hero-left {
+  max-width: 500px;
 }
 
-.form-title {
-    margin-bottom: 20px;
-    text-align: center;
-    font-size: 40px;
-    font-weight: 700;
+.hero-left h1 {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 20px;
 }
 
-.form input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 16px;
+.hero-left p {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 30px;
 }
 
-.btn-primary {
-    width: 100%;
-    background: #007bff;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
+.hero-buttons {
+  display: flex;
+  gap: 20px;
 }
 
-.btn-primary:hover {
-    background: #0065d1;
+.hero-right {
+  font-size: 120px;
+  opacity: 0.2;
 }
 
-.btn-secondary {
-    background: #444;
-    color: white;
-    padding: 10px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
+.hero-icon {
+  background: linear-gradient(90deg, #2f80ed, #56ccf2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.register-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50px;
+  height: 30px;
+  width: 450px;
+  cursor: pointer;
+  margin-top: 15px;
 }
 
 /* =========================================
    MENU UŻYTKOWNIKA (DODAWANIE NAPOJÓW / POSIŁKÓW)
 ========================================= */
 .burger-menu {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1000;
+  gap: 20px;
 }
 
 .burger-btn {
-    font-size: 24px;
-    background: #2a5250;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.burger-panel {
-    top: 0px;
-    left: 0px;
-    background: white;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+  font-size: 24px;
+  background: #2a5250;
+  color: white;
+  border: none;
+  padding: 0 20px;
+  cursor: pointer;
 }
 
 .burger-item {
-    border: none;
-    background: #f3f3f3;
-    padding: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    min-width: 200px;
+  border: none;
+  background: #f3f3f3;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
 }
 
 .burger-item:hover {
-    border: 2px solid gray;
+  border: 2px solid gray;
 }
 
 /* =========================================
@@ -245,363 +285,571 @@ body {
 ========================================= */
 
 .drinks-panel {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 10px auto;
-    background: #13a520;
-    width: 150px;
-    height: 30px;
-    color: white;
-    border-radius: 8px;
-    transition: 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 10px auto;
+  background: #13a520;
+  width: 150px;
+  height: 30px;
+  color: white;
+  border-radius: 8px;
+  transition: 0.2s;
 }
 
 .drinks-panel input {
-    padding: 10px;
-    border-radius: 10px;
-    border: 2px solid #ddd;
+  padding: 10px;
+  border-radius: 10px;
+  border: 2px solid #ddd;
 }
 
 .drinks-panel input:focus {
-    border-color: #4caf50;
+  border-color: #4caf50;
 }
 
 .drinks-panel button {
-    background: #4caf50;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
+  background: #4caf50;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 .drinks-panel button:hover {
-    background: #43a047;
+  background: #43a047;
 }
 
 .drinks-panel li {
-    background: #f3f3f3;
-    padding: 10px;
-    border-radius: 10px;
+  background: #f3f3f3;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 /* =========================================
-   PANEL LOGOWANIA
+   WSPÓLNE USTAWIENIA
 ========================================= */
-.containerheader {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+
+.containerheader,
+.containerRegistration {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 60px;
 }
 
-.oneblock {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 400px;
-    height: 400px;
-    gap: 20px;
-    background-color: rgb(121, 155, 219);
-    border-radius: 25px;
-    border: 2px solid white;
+/* =========================================
+   BOX (GLASS STYLE)
+========================================= */
+
+.oneblock,
+.registrationbox {
+  min-width: 520px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+
+  border-radius: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
 }
+
+.reg-text {
+  font-family: monospace, sans-serif;
+  font-weight: 500;
+  font-size: 30px;
+}
+
+.reg-input-email,
+.reg-input-pass {
+  padding: 0 15px;
+  border-radius: 12px;
+
+  background: rgba(2, 13, 24, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  color: white;
+  font-size: 16px;
+
+  outline: none;
+  transition: 0.3s ease;
+  min-width: 250px;
+  min-height: 50px;
+}
+
+.reg-input-email::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.reg-input-pass {
+  min-width: 250px;
+
+  padding: 0 15px;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  color: white;
+  font-size: 16px;
+
+  outline: none;
+  transition: 0.3s ease;
+}
+
+.reg-input-pass::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+.form-title {
+  font-family: monospace, sans-serif;
+  font-weight: 500;
+  font-size: 30px;
+}
+
+.form-subtitle {
+  font-family: monospace, sans-serif;
+  font-weight: 200;
+  font-size: 20px;
+}
+
+.inputLoginName {
+  min-width: 250px;
+}
+
+.inputLoginPassword {
+  min-width: 250px;
+}
+
+/* =========================================
+   INPUTY
+========================================= */
 
 .inputLoginName,
-.inputLoginPassword {
-    width: 350px;
-    height: 35px;
-    border-radius: 10px;
-    border: 1px solid black;
-    font-size: 18px;
-    padding-left: 10px;
+.inputLoginPassword,
+input.nameforregister,
+input.passwordforregister {
+  width: 100%;
+  height: 45px;
+
+  padding: 0 15px;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  color: white;
+  font-size: 16px;
+
+  outline: none;
+  transition: 0.3s ease;
 }
 
-.logged {
-    width: 300px;
-    height: 40px;
-    border-radius: 10px;
-    border: none;
-    background-color: rgb(88, 88, 248);
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    transition: 0.3s;
+.inputLoginName::placeholder,
+.inputLoginPassword::placeholder,
+input.nameforregister::placeholder,
+input.passwordforregister::placeholder {
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.logged:hover {
-    background-color: rgb(94, 179, 94);
-    transform: scale(1.1);
-}
-
-.forgotpassword {
-    font-size: 14px;
-    color: #222;
+.inputLoginName:focus,
+.inputLoginPassword:focus,
+input.nameforregister:focus,
+input.passwordforregister:focus {
+  border: 1px solid #56ccf2;
+  box-shadow: 0 0 10px rgba(86, 204, 242, 0.6);
 }
 
 /* =========================================
-   PANEL REJESTRACJI
+   GŁÓWNE PRZYCISKI (GRADIENT)
 ========================================= */
 
-.containerRegistration {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20px;
-}
-
-
-.registrationbox {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 400px;
-    height: 400px;
-    gap: 20px;
-    background-color: rgb(121, 155, 219);
-    border-radius: 25px;
-    border: 2px solid white;
-}
-
-
-input.nameforregister,
-input.passwordforregister {
-    width: 90%;
-    height: 35px;
-    padding-left: 10px;
-    border-radius: 10px;
-    border: 1px solid black;
-    font-size: 18px;
-}
-
+.logged,
 .sendregister {
-    width: 300px;
-    height: 40px;
-    background-color: rgb(88, 88, 248);
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    color: white;
-    font-size: 20px;
-    transition: 0.3s;
+  height: 45px;
+  border-radius: 25px;
+  border: none;
+
+  background: linear-gradient(
+    #002a33 10%,
+    #162a4a 30%,
+    #1e4e8c 70%,
+    #7c73af 100%
+  );
+  color: white;
+
+  font-size: 16px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 250px;
+  max-height: 30px;
 }
 
+.logged:hover,
 .sendregister:hover {
-    background-color: rgb(94, 179, 94);
-    transform: scale(1.1);
+  color: #13a520;
 }
+
+/* =========================================
+   LINK „Zapomniałeś hasła”
+========================================= */
+
+.forgotpassword {
+  font-size: 14px;
+  color: rgba(20, 11, 11, 0.7);
+  text-decoration: none;
+  transition: 0.3s;
+  cursor: pointer;
+  height: 10px;
+}
+
+.forgotpassword:hover {
+  color: #be4d4d;
+}
+
+/* =========================================
+   BŁĘDY
+========================================= */
 
 .error-text {
-    color: #ff4444;
-    font-size: 0.9rem;
-    margin-top: 4px;
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-top: -10px;
 }
 
 /* === PANEL (KARTA) === */
 .food-card {
-    background: #1e1e1e;
-    padding: 25px;
-    width: 420px;
-    border-radius: 16px;
-    border: 2px solid #28c7e1;
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
-    color: white;
-    animation: slideUp 0.3s ease-out;
+  background: #1e1e1e;
+  padding: 25px;
+  width: 420px;
+  border-radius: 16px;
+  border: 2px solid #28c7e1;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+  color: white;
+  animation: slideUp 0.3s ease-out;
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* === HEADER === */
 .food-title {
-    text-align: center;
-    font-size: 26px;
-    margin-bottom: 20px;
-    color: #5dd5ff;
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 20px;
+  color: #5dd5ff;
 }
 
 .header-container-main {
-    display: flex;
+  display: flex;
 }
 
 .header-container {
-    width: 150px;
-    height: 250px;
-    display: flex;
-    justify-content: center;
+  width: 150px;
+  height: 250px;
+  display: flex;
+  justify-content: center;
 }
 
 .menu-container {
-    width: 150px;
+  width: 150px;
 }
 
 /* === INPUTY === */
 .food-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
 }
 
 .food-row label {
-    font-size: 18px;
+  font-size: 18px;
 }
 
 .food-row input {
-    width: 200px;
-    padding: 8px 10px;
-    background: #2b2b2b;
-    border: 1px solid #555;
-    border-radius: 8px;
-    color: #00eaff;
-    font-size: 16px;
-    outline: none;
+  width: 200px;
+  padding: 8px 10px;
+  background: #2b2b2b;
+  border: 1px solid #555;
+  border-radius: 8px;
+  color: #00eaff;
+  font-size: 16px;
+  outline: none;
 }
 
 .food-row input:focus {
-    border-color: #28c7e1;
-    box-shadow: 0 0 5px #28c7e1;
+  border-color: #28c7e1;
+  box-shadow: 0 0 5px #28c7e1;
 }
 
 /* === PRZYCISK ZAMKNIJ === */
 /* === PANEL (KARTA) === */
 .food-card {
-    background: #1e1e1e;
-    padding: 25px;
-    width: 420px;
-    border-radius: 16px;
-    border: 2px solid #28c7e1;
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
-    color: white;
-    animation: slideUp 0.3s ease-out;
-    position: relative; /* konieczne dla food-close */
+  background: #1e1e1e;
+  padding: 25px;
+  width: 420px;
+  border-radius: 16px;
+  border: 2px solid #28c7e1;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+  color: white;
+  animation: slideUp 0.3s ease-out;
+  position: relative; /* konieczne dla food-close */
 }
 
 /* === PRZYCISK ZAMKNIJ (PRAWY GÓRNY RÓG) === */
 .food-close {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 34px;
-    height: 34px;
-    background: #d9534f;
-    border: none;
-    border-radius: 50%;
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s ease-in-out;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  background: #d9534f;
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease-in-out;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
 }
 
 .food-close:hover {
-    background: #c12d2a;
-    transform: scale(1.15);
+  background: #c12d2a;
+  transform: scale(1.15);
 }
 
 /* === PRZYCISK DODAJ PRODUKT === */
 .food-add {
-    width: 100%;
-    padding: 12px;
-    margin-top: 15px;
-    background: #28c7e1;
-    border: none;
-    border-radius: 10px;
-    color: #002a33;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.25s ease-out;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  background: #28c7e1;
+  border: none;
+  border-radius: 10px;
+  color: #002a33;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.25s ease-out;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
 }
 
 .food-add:hover {
-    background: #1fa9bf;
-    transform: scale(1.05);
-    box-shadow: 0 0 14px rgba(0, 255, 255, 0.3);
+  background: #1fa9bf;
+  transform: scale(1.05);
+  box-shadow: 0 0 14px rgba(0, 255, 255, 0.3);
 }
 
 .products-lists {
-    display: flex;
-    width: 100%;
-    height: auto;
-    justify-content: space-around;
-    align-items: center;
-    gap: 30px;
-    padding: 6px;
+  display: flex;
+  width: 100%;
+  height: auto;
+  justify-content: space-around;
+  align-items: center;
+  gap: 30px;
+  padding: 6px;
 }
 
 .products-lists > * {
-    text-align: center;
-    margin-top: 8px;
+  text-align: center;
+  margin-top: 8px;
 }
 
 /* === HISTORIA === */
 
-.history {
-    display: flex;
-    flex-direction: column;
+/* =========================================
+   FOOD HISTORY WRAPPER
+========================================= */
+
+.food-history {
+  margin: 40px auto;
+  padding: 30px;
+  max-width: 800px;
+
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
 }
 
-/*==== HISTORIA POSIŁKÓW ======*/
+/* =========================================
+   HEADER
+========================================= */
 
-.history-name {
-    color: orange;
+.food-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
 }
 
-.history-weight {
-    color: orange;
+.food-title {
+  font-size: 22px;
+  font-weight: 600;
 }
 
-.history-calories {
-    color: orange;
+.food-count {
+  font-size: 14px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.history-title {
-    margin-top: 25px;
-    font-size: 24px;
-    color: #7fe6ff;
+/* =========================================
+   EMPTY STATE
+========================================= */
+
+.food-empty {
+  text-align: center;
+  padding: 40px 0;
+  color: rgba(255, 255, 255, 0.6);
 }
 
-.history-list {
-    list-style: none;
-    margin-top: 10px;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
+/* =========================================
+   LISTA
+========================================= */
+
+.food-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.history-item {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    background: #2b2b2b;
-    padding: 10px 12px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border-left: 4px solid #28c7e1;
-    color: #d9f9ff;
+.food-list {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.history-amount {
-    display: flex;
-    gap: 20px;
-    color: red;
+.food-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 18px;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: all 0.25s ease;
+}
+
+.food-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(79, 140, 255, 0.2);
+}
+
+/* NAZWA */
+.food-item strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  flex: 1;
+}
+
+/* WAGA */
+.food-item span:nth-child(2) {
+  font-size: 13px;
+  color: #7fe6ff;
+  margin-right: 10px;
+}
+
+/* KALORIE – badge */
+.food-item span:nth-child(3) {
+  padding: 6px 12px;
+  border-radius: 20px;
+
+  background: linear-gradient(135deg, #4f8cff, #7c4dff);
+  color: white;
+
+  font-size: 12px;
+  font-weight: 500;
+
+  box-shadow: 0 6px 16px rgba(79, 140, 255, 0.4);
+}
+
+/* =========================================
+   ITEM (KARTA)
+========================================= */
+
+.food-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 18px 20px;
+  border-radius: 15px;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: 0.3s ease;
+}
+
+.food-card:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* =========================================
+   LEWA STRONA
+========================================= */
+
+.food-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.food-weight {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* =========================================
+   PRAWA STRONA (KCAL BADGE)
+========================================= */
+
+.food-calories {
+  padding: 8px 16px;
+  border-radius: 25px;
+
+  background: linear-gradient(90deg, #2f80ed, #56ccf2);
+  font-weight: 500;
+  font-size: 14px;
 }
 
 /* =========================================
@@ -609,163 +857,163 @@ input.passwordforregister {
 ========================================= */
 
 .water-title {
-    text-align: center;
-    font-size: 26px;
-    margin-bottom: 20px;
-    color: #5dd5ff;
+  text-align: center;
+  font-size: 26px;
+  margin-bottom: 20px;
+  color: #5dd5ff;
 }
 
 .waterpanel {
-    position: relative;
-    background: #1e1e1e;
-    padding: 25px;
-    width: 420px;
-    border-radius: 16px;
-    border: 2px solid #28c7e1;
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
-    color: white;
-    animation: slideUp 0.3s ease-out;
+  position: relative;
+  background: #1e1e1e;
+  padding: 25px;
+  width: 420px;
+  border-radius: 16px;
+  border: 2px solid #28c7e1;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+  color: white;
+  animation: slideUp 0.3s ease-out;
 }
 
 /* === ANIMACJA POJAWIENIA === */
 .waterPanelIn {
-    background: #1e1e1e;
-    padding: 25px;
-    width: 420px;
-    border-radius: 16px;
-    border: 2px solid #28c7e1;
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
-    color: white;
-    animation: slideUp 0.3s ease-out;
+  background: #1e1e1e;
+  padding: 25px;
+  width: 420px;
+  border-radius: 16px;
+  border: 2px solid #28c7e1;
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.15);
+  color: white;
+  animation: slideUp 0.3s ease-out;
 }
 
 @keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(40px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* === PRZYCISK ZAMKNIJ === */
 .closePanel {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #d9534f;
-    border: none;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s ease-in-out;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #d9534f;
+  border: none;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s ease-in-out;
 }
 
 .closePanel:hover {
-    background: #c12d2a;
-    transform: scale(1.15);
+  background: #c12d2a;
+  transform: scale(1.15);
 }
 
 /* === TYTUŁ + UKŁAD === */
 .watertitle {
-    margin-top: 10px;
-    font-size: 20px;
-    color: #5dd5ff;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
+  margin-top: 10px;
+  font-size: 20px;
+  color: #5dd5ff;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /* === INPUTY === */
 .watertitle input,
 .watername input {
-    width: 100%;
-    padding: 10px 12px;
-    background: #2b2b2b;
-    border: 1px solid #555;
-    border-radius: 10px;
-    color: #00eaff;
-    font-size: 15px;
-    outline: none;
+  width: 100%;
+  padding: 10px 12px;
+  background: #2b2b2b;
+  border: 1px solid #555;
+  border-radius: 10px;
+  color: #00eaff;
+  font-size: 15px;
+  outline: none;
 }
 
 .watertitle input:focus,
 .watername input:focus {
-    border-color: #28c7e1;
-    box-shadow: 0 0 6px rgba(40, 199, 225, 0.6);
+  border-color: #28c7e1;
+  box-shadow: 0 0 6px rgba(40, 199, 225, 0.6);
 }
 
 /* === SEKCJA ILOŚCI === */
 .watername {
-    font-size: 18px;
-    color: #7fe6ff;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  font-size: 18px;
+  color: #7fe6ff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* === PRZYCISK DODAJ === */
 .addWaterName {
-    margin-top: 6px;
-    background: #28c7e1;
-    border: none;
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    color: #002a33;
-    transition: 0.25s ease-in-out;
+  margin-top: 6px;
+  background: #28c7e1;
+  border: none;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #002a33;
+  transition: 0.25s ease-in-out;
 }
 
 .addWaterName:hover {
-    background: #1fa9bf;
-    transform: scale(1.05);
+  background: #1fa9bf;
+  transform: scale(1.05);
 }
 
 /* === HISTORIA === */
 .waterhistory {
-    margin-top: 15px;
-    font-size: 16px;
-    color: #ccc;
+  margin-top: 15px;
+  font-size: 16px;
+  color: #ccc;
 }
 
 .addedDrinks {
-    list-style: none;
-    margin-top: 8px;
-    background: #2b2b2b;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border-left: 4px solid #28c7e1;
-    color: #d9f9ff;
+  list-style: none;
+  margin-top: 8px;
+  background: #2b2b2b;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #28c7e1;
+  color: #d9f9ff;
 }
 
 /* === PROGRESS BAR === */
 .progressbar {
-    margin-top: 18px;
-    background: #2b2b2b;
-    border-radius: 12px;
-    padding: 8px;
-    font-size: 14px;
-    color: #ccc;
+  margin-top: 18px;
+  background: #2b2b2b;
+  border-radius: 12px;
+  padding: 8px;
+  font-size: 14px;
+  color: #ccc;
 }
 
 .progressbar > div {
-    height: 10px;
-    margin-top: 6px;
-    border-radius: 10px;
-    background: linear-gradient(90deg, #28c7e1, #00eaff);
-    width: 100%;
-    transition: width 0.3s ease-in-out;
+  height: 10px;
+  margin-top: 6px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #28c7e1, #00eaff);
+  width: 100%;
+  transition: width 0.3s ease-in-out;
 }
 
 /* =========================================
@@ -774,29 +1022,30 @@ input.passwordforregister {
 
 /* KONTENER NA PRZYCISKI (KOLUMNA / STACK) */
 .button-column {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
 }
 
 /* BAZOWY PRZYCISK */
 button,
 .app-button {
-    appearance: none;
-    border: none;
-    border-radius: 14px;
-    padding: 12px 18px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.25s ease,
+  appearance: none;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
     box-shadow 0.25s ease,
     background 0.25s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.3px;
 }
 
 /* PRIMARY – akcje główne */
@@ -804,162 +1053,448 @@ button,
 .food-add,
 .addWaterName,
 .btn-primary {
-    background: linear-gradient(135deg, #28c7e1, #00eaff);
-    color: #002a33;
-    box-shadow: 0 6px 20px rgba(0, 234, 255, 0.35);
+  background: linear-gradient(135deg, #28c7e1, #00eaff);
+  color: #002a33;
+  box-shadow: 0 6px 20px rgba(0, 234, 255, 0.35);
 }
 
 .menuApp:hover,
 .food-add:hover,
 .addWaterName:hover,
 .btn-primary:hover {
-    transform: translateY(-2px) scale(1.04);
-    box-shadow: 0 10px 30px rgba(0, 234, 255, 0.55);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 10px 30px rgba(0, 234, 255, 0.55);
 }
 
 /* DANGER – akcje destrukcyjne */
 .logout,
 .closePanel,
 .food-close {
-    background: linear-gradient(135deg, #ff5f5f, #d9534f);
-    color: white;
-    box-shadow: 0 6px 20px rgba(217, 83, 79, 0.45);
+  background: linear-gradient(135deg, #ff5f5f, #d9534f);
+  color: white;
+  box-shadow: 0 6px 20px rgba(217, 83, 79, 0.45);
 }
 
 .logout:hover,
 .closePanel:hover,
 .food-close:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 10px 30px rgba(217, 83, 79, 0.6);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 30px rgba(217, 83, 79, 0.6);
 }
 
 /* SECONDARY / NEUTRAL */
 .account,
 .register,
 .btn-secondary {
-    background: #2b2b2b;
-    color: #e0e0e0;
-    border: 1px solid #444;
+  background: #2b2b2b;
+  color: #e0e0e0;
+  border: 1px solid #444;
 }
 
 .account:hover,
 .register:hover,
 .btn-secondary:hover {
-    background: #333;
-    transform: translateY(-1px);
+  background: #333;
+  transform: translateY(-1px);
 }
 
 /* OKRĄGŁE (ICON BUTTONS) */
 .btn-plus {
-    background: linear-gradient(135deg, #4caf50, #43a047);
-    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.45);
+  background: linear-gradient(135deg, #4caf50, #43a047);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.45);
 }
 
 .btn-plus:hover {
-    transform: scale(1.15);
-    box-shadow: 0 10px 26px rgba(76, 175, 80, 0.6);
+  transform: scale(1.15);
+  box-shadow: 0 10px 26px rgba(76, 175, 80, 0.6);
 }
 
 /* DISABLED (NA PRZYSZŁOŚĆ) */
 button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 /* =========================================
    WATER HISTORY – STYL JAK FOOD HISTORY
 ========================================= */
 
-/* Tytuł historii */
-.waterhistory {
-    margin-top: 25px;
-    font-size: 22px;
-    text-align: center;
-    color: #7fe6ff;
+/* ===== WATER MODAL ===== */
+
+.water-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-/* Lista napojów */
-.waterhistory ul {
-    list-style: none;
-    margin-top: 10px;
-    padding: 0;
+.water-modal {
+  width: 360px;
+  padding: 30px;
+  border-radius: 20px;
+  background: rgba(20, 30, 60, 0.9);
+  backdrop-filter: blur(20px);
+  color: white;
+  position: relative;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
-/* Pojedynczy napój – karta */
-.addedDrinks {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #2b2b2b;
-    padding: 10px 14px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    border-left: 4px solid #28c7e1;
-    color: #d9f9ff;
-    font-size: 16px;
-    box-shadow: 0 4px 12px rgba(0, 255, 255, 0.08);
-    transition: transform 0.2s ease,
-    box-shadow 0.2s ease;
+.water-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
 }
 
-/* Hover jak w posiłkach */
-.addedDrinks:hover {
-    transform: translateX(4px);
-    box-shadow: 0 6px 18px rgba(0, 255, 255, 0.18);
+.water-title {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 24px;
 }
 
-/* Nazwa napoju */
-.addedDrinks .drink-name {
-    font-weight: 600;
-    color: #7fe6ff;
+.water-input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
 }
 
-/* Ilość */
-.addedDrinks .drink-amount {
-    font-size: 14px;
-    color: #00eaff;
+.water-input-group label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  opacity: 0.8;
 }
 
-.stats-wrapper {
-    display: flex;
-    justify-content: space-between; /* kontrola osi Y */
-    width: 100%;
-    max-width: 420px;
+.water-input-group input {
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
 }
 
-.panels-row {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    padding: 0 10px;
-    gap: 50px; /* ODSTĘP między panelami */
+.water-input-group input:focus {
+  background: rgba(255, 255, 255, 0.15);
 }
 
-.main-burger {
-    position: fixed;
-    top: 100px;
-    left: 20px;
-    z-index: 3000;
+.water-add-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #1e90ff, #3aa0ff);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 15px;
 }
 
-.menu-toggle {
-    font-size: 28px;
-    padding: 10px 16px;
+.water-add-btn:hover {
+  opacity: 0.9;
 }
 
-.menu-content {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background: black;
-    padding: 15px;
-    border-radius: 12px;
+/*==== FOOD PANEL ======*/
+
+.panel-card {
+  position: relative;
+  margin-top: 50px;
+  width: 380px;
+  padding: 30px 28px;
+  border-radius: 20px;
+
+  background: rgba(30, 30, 40, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  animation: fadeIn 0.3s ease;
+}
+.panel-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 25px;
+  letter-spacing: 0.5px;
+}
+.panel-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+.panel-row label {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 6px;
+  letter-spacing: 0.4px;
+}
+
+.input-value {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 14px;
+
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.input-value:focus {
+  border-color: #4f8cff;
+  box-shadow: 0 0 0 3px rgba(79, 140, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+}
+.add-btn {
+  margin-top: 10px;
+  padding: 13px;
+  border-radius: 14px;
+  border: none;
+
+  background: linear-gradient(135deg, #4f8cff, #7c4dff);
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+  box-shadow: 0 10px 20px rgba(79, 140, 255, 0.35);
+}
+
+.add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(79, 140, 255, 0.45);
+}
+
+.add-btn:active {
+  transform: translateY(0px);
+}
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 18px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.close-btn:hover {
+  color: #ff4f4f;
+  transform: rotate(90deg);
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Chrome, Edge, Safari */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* =========================================
+   HEADER - MAIN VIEV
+========================================= */
+
+/* ===== DASHBOARD LAYOUT ===== */
+
+.dashboard-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 80px 0 50px 0;
+  position: relative;
+}
+
+.dashboard-title {
+  font-size: 52px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 1px;
+  text-align: center;
+
+  background: linear-gradient(135deg, #4f8cff, #7c4dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dashboard-cards {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+  height: 100%;
+}
+
+.dashboard-card {
+  width: 450px;
+  padding: 35px;
+
+  background: rgba(30, 30, 40, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+  color: white;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  transition: all 0.35s ease;
+  cursor: pointer;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(79, 140, 255, 0.25);
+}
+.dashboard-card h2 {
+  margin-bottom: 25px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.card-icon {
+  font-size: 44px;
+  margin-bottom: 20px;
+  opacity: 0.9;
+  transition: transform 0.3s ease;
+}
+
+.dashboard-card:hover .card-icon {
+  transform: scale(1.15);
+}
+.card-btn {
+  margin-top: 25px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 14px;
+
+  background: linear-gradient(135deg, #4f8cff, #7c4dff);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+  box-shadow: 0 10px 20px rgba(79, 140, 255, 0.35);
+}
+
+.card-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(79, 140, 255, 0.45);
+}
+
+.card-btn:active {
+  transform: translateY(0);
+}
+.dashboard-wrapper {
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 30%, #1f1f2e, #0f0f18);
+  padding-bottom: 80px;
+}
+
+/* ===== FLOATING BUTTON ===== */
+
+.floating-add-btn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  font-size: 32px;
+  background: linear-gradient(135deg, #1e90ff, #3aa0ff);
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.toggle-btn {
+  bottom: 20px;
+  right: 20px;
+
+  width: 122px;
+  height: 42px;
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, #4f8cff, #7c4dff);
+  border: none;
+
+  /* display: flex;
+  align-items: center;
+  justify-content: center; */
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  box-shadow:
+    0 8px 20px rgba(79, 140, 255, 0.35),
+    inset 0 0 8px rgba(255, 255, 255, 0.25);
+}
+
+.toggle-btn:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow:
+    0 14px 30px rgba(79, 140, 255, 0.55),
+    inset 0 0 10px rgba(255, 255, 255, 0.35);
+}
+
+.toggle-btn:active {
+  transform: scale(0.95);
+}
+
+.toggle-btn .arrow {
+  font-size: 18px;
+  color: white;
+  transition: transform 0.3s ease;
+}
+  
+
+ .toggle-btn .arrow.open {
+  transform: rotate(180deg);
+} 
+
+.toggle-btn .arrow.close {
+  transform: rotate(360deg);
 }
 
 /* =========================================
@@ -968,146 +1503,63 @@ button:disabled {
 
 /* TŁO + GLOW gdy menu otwarte */
 .burger-btn.open {
-    border-color: #022d31;
-    margin: 0 auto;
-    width: 100%;
+  border-color: #022d31;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* LINIE po otwarciu (X) */
 .burger-btn.open span {
-    background: #002a33;
+  background: #002a33;
 }
 
-.burger-panel {
-    display: flex;
-    flex-direction: column;
-    margin-top: 30px;
-}
+/* .burger-panel {
+  display: flex;
+  flex-direction: column;
+  max-width: 100px;
+} */
 
 .burger-item {
-    max-width: 100px;
-    margin: 10px;
-}
-
-/* =========================================
-   PANEL CARD – MODERN / GLASS / NEON
-========================================= */
-
-.panel-card {
-    width: 100%;
-    padding: 26px 24px;
-    border-radius: 18px;
-
-    /* GLASS BACKGROUND */
-    background: linear-gradient(
-            135deg,
-            rgba(30, 30, 30, 0.95),
-            rgba(20, 20, 20, 0.85)
-    );
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-
-    /* NEON BORDER */
-    border: 1px solid rgba(40, 199, 225, 0.45);
-
-    /* SHADOW + GLOW */
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.65),
-    inset 0 0 20px rgba(0, 234, 255, 0.08),
-    0 0 30px rgba(0, 234, 255, 0.15);
-
-    color: #e6fbff;
-
-    /* ANIMACJA */
-    animation: panelFadeIn 0.35s ease-out;
-}
-
-/* ANIMACJA WEJŚCIA */
-@keyframes panelFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* =========================================
-   PANEL TITLE
-========================================= */
-.panel-title {
-    text-align: center;
-    font-size: 26px;
-    font-weight: 700;
-    margin-bottom: 22px;
-    letter-spacing: 0.6px;
-    text-shadow: 0 0 12px rgba(0, 234, 255, 0.35);
-}
-
-.panel-row {
-    font-size: 22px;
-    width: 100%;
-    justify-content: center;
-    align-items: center;
-}
-
-.panel-row label {
-    font-size: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin: 3px;
-}
-
-.panel-row input {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin: 15px auto;
-}
-
-.input-value {
-    margin-left: 10px;
-    border: 20px;
-    font-size: 22px;
+  max-width: 100px;
+  margin: 10px;
 }
 
 /* =========================================
    CLOSE BUTTON
 ========================================= */
 .close-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
+  position: absolute;
+  z-index: 9000;
+  top: 14px;
+  right: 14px;
 
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
 
-    background: linear-gradient(135deg, #ff6b6b, #d9534f);
-    border: none;
-    color: white;
+  background: linear-gradient(135deg, #ff6b6b, #d9534f);
+  border: none;
+  color: white;
 
-    font-size: 18px;
-    font-weight: bold;
+  font-size: 18px;
+  font-weight: bold;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-    cursor: pointer;
-    transition: all 0.25s ease;
+  cursor: pointer;
+  transition: all 0.25s ease;
 
-    box-shadow: 0 6px 18px rgba(217, 83, 79, 0.45),
+  box-shadow:
+    0 6px 18px rgba(217, 83, 79, 0.45),
     inset 0 0 6px rgba(255, 255, 255, 0.15);
 }
 
 .close-btn:hover {
-    transform: rotate(90deg) scale(1.15);
-    box-shadow: 0 10px 28px rgba(217, 83, 79, 0.65),
+  transform: rotate(90deg) scale(1.15);
+  box-shadow:
+    0 10px 28px rgba(217, 83, 79, 0.65),
     inset 0 0 10px rgba(255, 255, 255, 0.25);
 }
 
@@ -1115,1190 +1567,1319 @@ button:disabled {
    PRIMARY BUTTON
 ========================================= */
 .primary-btn {
-    width: 100%;
-    margin-top: 18px;
-    padding: 14px;
+  width: 100%;
+  margin-top: 18px;
+  padding: 14px;
 
-    border-radius: 14px;
-    border: none;
+  border-radius: 14px;
+  border: none;
 
-    background: linear-gradient(135deg, #28c7e1, #00eaff);
-    color: #002a33;
+  background: linear-gradient(135deg, #28c7e1, #00eaff);
+  color: #002a33;
 
-    font-size: 17px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 
-    cursor: pointer;
-    transition: all 0.25s ease;
+  cursor: pointer;
+  transition: all 0.25s ease;
 
-    box-shadow: 0 8px 26px rgba(0, 234, 255, 0.45),
+  box-shadow:
+    0 8px 26px rgba(0, 234, 255, 0.45),
     inset 0 0 8px rgba(255, 255, 255, 0.25);
 }
 
 .primary-btn:hover {
-    transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 14px 36px rgba(0, 234, 255, 0.65),
+  transform: translateY(-2px) scale(1.03);
+  box-shadow:
+    0 14px 36px rgba(0, 234, 255, 0.65),
     inset 0 0 10px rgba(255, 255, 255, 0.35);
 }
 
 .primary-btn:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 /* =========WODA I KALORIE JAKO WYKRES =========== */
 
 .dashboard-grid {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 80px;
-    max-width: 520px;
-    margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 80px;
+  max-width: 520px;
+  margin: 0 auto;
 }
 
 .calories-summary {
-    margin-bottom: 10px;
-    font-size: 18px;
-    font-weight: 500;
-    height: 300px;
-    padding: 10px auto;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  height: 300px;
+  padding: 10px auto;
 }
 
 .water-summary {
-    margin-bottom: 10px;
-    font-size: 18px;
-    font-weight: 500;
-    height: 300px;
-    padding: 10px auto;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 500;
+  height: 300px;
+  padding: 10px auto;
 }
 
 .hidden {
-    display: none !important;
+  display: none !important;
 }
 
 .calories-summary:hover,
 .water-summary:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65),
+  transform: translateY(-4px);
+  box-shadow:
+    0 22px 55px rgba(0, 0, 0, 0.65),
     inset 0 0 22px rgba(0, 234, 255, 0.18),
     0 0 22px rgba(0, 234, 255, 0.25);
 }
 
 .calories-summary > div:first-child,
 .water-summary > div:first-child {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: #7fe6ff;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #7fe6ff;
 }
 
 /* === DASHBOARD MINI PANELS === */
 .calories-summary,
 .water-summary {
-    position: relative;
+  position: relative;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
-    width: 180px;
-    min-height: 200px;
-    padding: 18px 16px;
+  width: 180px;
+  min-height: 200px;
+  padding: 18px 16px;
 
-    /* GLASS LOOK */
-    background: linear-gradient(
-            135deg,
-            rgba(30, 30, 30, 0.85),
-            rgba(20, 20, 20, 0.75)
-    );
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+  /* GLASS LOOK */
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.85),
+    rgba(20, 20, 20, 0.75)
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 
-    border-radius: 18px;
+  border-radius: 18px;
 
-    /* SUBTLE NEON */
-    border: 1px solid rgba(40, 199, 225, 0.35);
-    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55),
+  /* SUBTLE NEON */
+  border: 1px solid rgba(40, 199, 225, 0.35);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.55),
     inset 0 0 18px rgba(0, 234, 255, 0.08);
 
-    color: #e6fbff;
+  color: #e6fbff;
 
-    transition: transform 0.25s ease,
+  transition:
+    transform 0.25s ease,
     box-shadow 0.25s ease;
 }
 
 /* === NAV TITLE BLOCK === */
 .title-block {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
 }
 
 /* linia użytkownika */
 .user-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* greeting */
 .user-row .greeting {
-    font-size: 14px;
-    margin: 0;
-    white-space: nowrap;
+  font-size: 14px;
+  margin: 0;
+  white-space: nowrap;
 }
 
 /* logout jako „chip / pill” */
 .user-row .logout {
-    height: 30px;
-    padding: 0 14px;
-    font-size: 13px;
-    border-radius: 999px;
+  height: 30px;
+  padding: 0 14px;
+  font-size: 13px;
+  border-radius: 999px;
 }
 
 /*==================FOOTER =============================================================================================================*/
 
 .footer {
-    font-size: 30px;
-    color: white;
+  font-size: 30px;
+  color: white;
 }
 
 .footer-for-progress {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* =========== ==================================================================================================================MEDIA QUERY FOR 320PX ==================================================================================================*/
 
 @media (max-width: 320px) {
-    .navbar {
-        padding: 5px;
-        top: 10px;
-        height: 90px;
-        border-radius: 20vh;
-        justify-content: space-around;
-        gap: 6px;
-    }
+  body {
+    background-color: #ffea4a;
+  }
 
-    .navbar button {
-        font-size: 10px;
-        margin-bottom: 20px;
-    }
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
 
-    .oneblock {
-        max-width: 250px;
-    }
+  .oneblock {
+    max-width: 250px;
+  }
 
-    .inputLoginName {
-        max-width: 150px;
-    }
+  .inputLoginName {
+    max-width: 150px;
+  }
 
-    .inputLoginPassword {
-        max-width: 150px;
-    }
+  .inputLoginPassword {
+    max-width: 150px;
+  }
 
-    .logged {
-        max-width: 150px;
-    }
+  .logged {
+    max-width: 150px;
+  }
 
-    .main-icon {
-        border-radius: 10%;
-    }
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
 
-    .titleApp {
-        font-size: 16px;
-        margin-left: 0;
-    }
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
 
-    .greeting {
-        display: block;
-        font-size: 14px;
-        width: auto;
-        color: white;
-    }
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
 
-    .logout {
-        display: flex !important;
-        font-size: 10px;
-        width: 100px;
-        height: 20px;
-    }
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
 
-    .logout {
-        position: relative;
-        z-index: 5000;
-    }
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
 
-    .burger-panel {
-        position: fixed;
-        border-radius: 300px;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        max-width: 100vw;
-        background: black;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 4000;
-    }
+  /* .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  } */
 
-    .burger-btn {
-        font-size: 20px;
-        padding: 8px;
-        margin-top: 25px;
-        cursor: pointer;
-        border: none;
-        border-radius: 50%;
-    }
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
 
-    .burger-btn.open {
-        width: 30px;
-        margin-top: 25px;
+    background-color: none;
+  }
 
-        background-color: none;
-    }
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
 
-    .burger-menu {
-        position: absolute;
-        top: 0px;
-        left: 10px;
-        z-index: 0;
-        font-size: 10px;
-        width: 100%;
-    }
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
 
-    .panels-only {
-        display: flex;
-        /* flex-direction: column; */
-        justify-content: center;
-    }
+  .panels-card {
+    margin-top: 200px;
+  }
 
-    .panels-card {
-        margin-top: 200px;
-    }
+  .footer-for-progress {
+    width: 100%;
+  }
 
-    .footer-for-progress {
-        width: 100%;
-    }
+  .footer {
+    font-size: 20px;
+  }
 
-    .footer {
-        font-size: 20px;
-    }
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
 
-    .history {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 10px;
-    }
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
 
-    .history-list {
-        max-width: 350px;
-        width: 200px;
-    }
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .panels-row > .panel-card,
-    .panels-row > .food-card,
-    .panels-row > .waterpanel {
-        width: 100%;
-        max-width: 300px;
-    }
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
 
-    .panel-row {
-        width: 100%;
-        max-width: 100%;
-        font-size: 18px;
-    }
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
 
-    .panel-row input {
-        width: 100%;
-        max-width: 100%;
-        margin: 8px 0;
-        font-size: 16px;
-    }
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
 
-    .close-btn {
-        font-size: 10px;
-        width: 15px;
-        height: 30px;
-    }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
 
-    .calories-summary,
-    .water-summary {
-        width: 100%;
-        max-width: 300px;
-        min-height: 180px;
-    }
-
-    .menuApp,
-    .account,
-    .register,
-    .greeting {
-        display: none;
-    }
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
 }
 
-@media (min-width: 321px) and (max-width: 480px) {
-    .navbar {
-        padding: 5px;
-        top: 10px;
-        height: 90px;
-        border-radius: 20vh;
-        justify-content: space-around;
-        gap: 6px;
-    }
+@media (min-width: 321px) {
+  body {
+    background-color: #ffea4a;
+  }
 
-    .navbar button {
-        font-size: 10px;
-        margin-bottom: 20px;
-    }
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
 
-    .oneblock {
-        max-width: 250px;
-    }
+  .oneblock {
+    max-width: 250px;
+  }
 
-    .inputLoginName {
-        max-width: 150px;
-    }
+  .inputLoginName {
+    max-width: 150px;
+  }
 
-    .inputLoginPassword {
-        max-width: 150px;
-    }
+  .inputLoginPassword {
+    max-width: 150px;
+  }
 
-    .logged {
-        max-width: 150px;
-    }
+  .logged {
+    max-width: 150px;
+  }
 
-    .main-icon {
-        border-radius: 10%;
-    }
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
 
-    .titleApp {
-        font-size: 16px;
-        margin-left: 0;
-    }
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
 
-    .greeting {
-        display: block;
-        font-size: 14px;
-        width: auto;
-        color: white;
-    }
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
 
-    .logout {
-        display: flex !important;
-        font-size: 10px;
-        width: 100px;
-        height: 20px;
-    }
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
 
-    .logout {
-        position: relative;
-        z-index: 5000;
-    }
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
 
-    .burger-panel {
-        position: fixed;
-        border-radius: 300px;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        max-width: 100vw;
-        background: black;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 4000;
-    }
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
 
-    .burger-btn {
-        font-size: 20px;
-        padding: 8px;
-        margin-top: 25px;
-        cursor: pointer;
-        border: none;
-        border-radius: 50%;
-    }
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
 
-    .burger-btn.open {
-        width: 30px;
-        margin-top: 25px;
+    background-color: none;
+  }
 
-        background-color: none;
-    }
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
 
-    .burger-menu {
-        position: absolute;
-        top: 0px;
-        left: 10px;
-        z-index: 0;
-        font-size: 10px;
-        width: 100%;
-    }
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
 
-    .panels-only {
-        display: flex;
-        /* flex-direction: column; */
-        justify-content: center;
-    }
+  .panels-card {
+    margin-top: 200px;
+  }
 
-    .panels-card {
-        margin-top: 200px;
-    }
+  .footer-for-progress {
+    width: 100%;
+  }
 
-    .footer-for-progress {
-        width: 100%;
-    }
+  .footer {
+    font-size: 20px;
+  }
 
-    .footer {
-        font-size: 20px;
-    }
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
 
-    .history {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 10px;
-    }
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
 
-    .history-list {
-        max-width: 350px;
-        width: 200px;
-    }
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .panels-row > .panel-card,
-    .panels-row > .food-card,
-    .panels-row > .waterpanel {
-        width: 100%;
-        max-width: 300px;
-    }
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
 
-    .panel-row {
-        width: 100%;
-        max-width: 100%;
-        font-size: 18px;
-    }
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
 
-    .panel-row input {
-        width: 100%;
-        max-width: 100%;
-        margin: 8px 0;
-        font-size: 16px;
-    }
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
 
-    .close-btn {
-        font-size: 10px;
-        width: 15px;
-        height: 30px;
-    }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
 
-    .calories-summary,
-    .water-summary {
-        width: 100%;
-        max-width: 300px;
-        min-height: 180px;
-    }
-
-    .menuApp,
-    .account,
-    .register,
-    .greeting {
-        display: none;
-    }
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
 }
 
-@media (min-width: 481px) and (max-width: 769px) {
-    .navbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-around;
-        padding: 5px;
-        top: 10px;
-        height: 90px;
-        border-radius: 20vh;
-        gap: 6px;
-    }
+@media (min-width: 481px) {
+  body {
+    background-color: #ffea4a;
+  }
 
-    .navbar button {
-        font-size: 10px;
-        margin-bottom: 20px;
-    }
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
 
-    .greeting {
-        display: flex;
-        margin-right: 40px;
-        font-weight: 100;
-    }
+  .oneblock {
+    max-width: 250px;
+  }
 
+  .inputLoginName {
+    max-width: 150px;
+  }
 
-    .oneblock {
-        max-width: 250px;
-    }
+  .inputLoginPassword {
+    max-width: 150px;
+  }
 
-    .inputLoginName {
-        max-width: 150px;
-    }
+  .logged {
+    max-width: 150px;
+  }
 
-    .inputLoginPassword {
-        max-width: 150px;
-    }
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
 
-    .logged {
-        max-width: 150px;
-    }
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
 
-    .main-icon {
-        border-radius: 10%;
-    }
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
 
-    .titleApp {
-        font-size: 16px;
-        margin-left: 0;
-    }
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
 
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
 
-    .logout {
-        display: flex !important;
-        font-size: 10px;
-        width: 100px;
-        height: 20px;
-    }
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
 
-    .logout {
-        position: relative;
-        z-index: 5000;
-    }
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
 
-    .burger-panel {
-        position: fixed;
-        border-radius: 300px;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        max-width: 100vw;
-        background: black;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 4000;
-    }
+    background-color: none;
+  }
 
-    .burger-btn {
-        font-size: 20px;
-        padding: 8px;
-        margin-top: 25px;
-        cursor: pointer;
-        border: none;
-        border-radius: 50%;
-    }
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
 
-    .burger-btn.open {
-        width: 30px;
-        margin-top: 25px;
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
 
-        background-color: none;
-    }
+  .panels-card {
+    margin-top: 200px;
+  }
 
-    .burger-menu {
-        position: absolute;
-        top: 0px;
-        left: 10px;
-        z-index: 0;
-        font-size: 10px;
-        width: 100%;
-    }
+  .footer-for-progress {
+    width: 100%;
+  }
 
-    .panels-only {
-        display: flex;
-        /* flex-direction: column; */
-        justify-content: center;
-    }
+  .footer {
+    font-size: 20px;
+  }
 
-    .panels-card {
-        margin-top: 200px;
-    }
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
 
-    .footer-for-progress {
-        width: 100%;
-    }
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
 
-    .footer {
-        font-size: 20px;
-    }
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .history {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 10px;
-    }
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
 
-    .history-list {
-        max-width: 350px;
-        width: 200px;
-    }
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
 
-    .panels-row > .panel-card,
-    .panels-row > .food-card,
-    .panels-row > .waterpanel {
-        width: 100%;
-        max-width: 300px;
-    }
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
 
-    .panel-row {
-        width: 100%;
-        max-width: 100%;
-        font-size: 18px;
-    }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
 
-    .panel-row input {
-        width: 100%;
-        max-width: 100%;
-        margin: 8px 0;
-        font-size: 16px;
-    }
-
-    .close-btn {
-        font-size: 10px;
-        width: 15px;
-        height: 30px;
-    }
-
-    .calories-summary,
-    .water-summary {
-        width: 100%;
-        max-width: 300px;
-        min-height: 180px;
-    }
-
-    .menuApp,
-    .account,
-    .register {
-        display: none;
-    }
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
 }
 
-@media (min-width: 770px) and (max-width: 990px) {
+@media (min-width: 770px) {
+  body {
+    background-color: #ffea4a;
+  }
 
-    body {
-        background-color: #ffea4a;
-    }
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
 
-    .navbar {
-        background-color: #3dff80;
-        padding: 5px;
-        top: 10px;
-        height: 90px;
-        border-radius: 20vh;
-        justify-content: space-around;
-        gap: 6px;
-        margin: 0 40px;
-    }
+  .oneblock {
+    max-width: 250px;
+  }
 
-    .navbar button {
-        font-size: 10px;
-        margin-bottom: 20px;
-    }
+  .inputLoginName {
+    max-width: 150px;
+  }
 
-    .oneblock {
-        max-width: 250px;
-    }
+  .inputLoginPassword {
+    max-width: 150px;
+  }
 
-    .inputLoginName {
-        max-width: 150px;
-    }
+  .logged {
+    max-width: 150px;
+  }
 
-    .inputLoginPassword {
-        max-width: 150px;
-    }
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
 
-    .logged {
-        max-width: 150px;
-    }
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
 
-    .main-icon {
-        border-radius: 10%;
-    }
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
 
-    .titleApp {
-        font-size: 16px;
-        margin-left: 0;
-    }
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
 
-    .greeting {
-        display: block;
-        font-size: 14px;
-        width: auto;
-        color: white;
-    }
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
 
-    .logout {
-        display: flex !important;
-        font-size: 10px;
-        width: 100px;
-        height: 20px;
-    }
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
 
-    .logout {
-        position: relative;
-        z-index: 5000;
-    }
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
 
-    .burger-panel {
-        position: fixed;
-        border-radius: 300px;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        max-width: 100vw;
-        background: black;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 4000;
-    }
+    background-color: none;
+  }
 
-    .burger-btn {
-        font-size: 20px;
-        padding: 8px;
-        margin-top: 25px;
-        cursor: pointer;
-        border: none;
-        border-radius: 50%;
-    }
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
 
-    .burger-btn.open {
-        width: 30px;
-        margin-top: 25px;
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
 
-        background-color: none;
-    }
+  .panels-card {
+    margin-top: 200px;
+  }
 
-    .burger-menu {
-        position: absolute;
-        top: 0px;
-        left: 10px;
-        z-index: 0;
-        font-size: 10px;
-        width: 100%;
-    }
+  .footer-for-progress {
+    width: 100%;
+  }
 
-    .panels-only {
-        display: flex;
-        /* flex-direction: column; */
-        justify-content: center;
-    }
+  .footer {
+    font-size: 20px;
+  }
 
-    .panels-card {
-        margin-top: 200px;
-    }
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
 
-    .footer-for-progress {
-        width: 100%;
-    }
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
 
-    .footer {
-        font-size: 20px;
-    }
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .history {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 10px;
-    }
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
 
-    .history-list {
-        max-width: 350px;
-        width: 200px;
-    }
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
 
-    .panels-row > .panel-card,
-    .panels-row > .food-card,
-    .panels-row > .waterpanel {
-        width: 100%;
-        max-width: 300px;
-    }
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
 
-    .panel-row {
-        width: 100%;
-        max-width: 100%;
-        font-size: 18px;
-    }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
 
-    .panel-row input {
-        width: 100%;
-        max-width: 100%;
-        margin: 8px 0;
-        font-size: 16px;
-    }
-
-    .close-btn {
-        font-size: 10px;
-        width: 15px;
-        height: 30px;
-    }
-
-    .calories-summary,
-    .water-summary {
-        width: 100%;
-        max-width: 300px;
-        min-height: 180px;
-    }
-
-    .menuApp,
-    .account,
-    .register,
-    .greeting {
-        display: none;
-    }
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
 }
 
-@media (min-width: 991px) and (max-width: 1050px) {
-    .navbar {
-        padding: 5px;
-        top: 10px;
-        height: 90px;
-        border-radius: 20vh;
-        justify-content: space-around;
-        gap: 6px;
-    }
+@media (min-width: 991px) {
+  body {
+    background-color: #ffea4a;
+  }
 
-    .navbar button {
-        font-size: 10px;
-        margin-bottom: 20px;
-    }
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
 
-    .oneblock {
-        max-width: 250px;
-    }
+  .oneblock {
+    max-width: 250px;
+  }
 
-    .inputLoginName {
-        max-width: 150px;
-    }
+  .inputLoginName {
+    max-width: 150px;
+  }
 
-    .inputLoginPassword {
-        max-width: 150px;
-    }
+  .inputLoginPassword {
+    max-width: 150px;
+  }
 
-    .logged {
-        max-width: 150px;
-    }
+  .logged {
+    max-width: 150px;
+  }
 
-    .main-icon {
-        border-radius: 10%;
-    }
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
 
-    .titleApp {
-        font-size: 16px;
-        margin-left: 0;
-    }
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
 
-    .greeting {
-        display: block;
-        font-size: 14px;
-        width: auto;
-        color: white;
-    }
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
 
-    .logout {
-        display: flex !important;
-        font-size: 10px;
-        width: 100px;
-        height: 20px;
-    }
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
 
-    .logout {
-        position: relative;
-        z-index: 5000;
-    }
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
 
-    .burger-panel {
-        position: fixed;
-        border-radius: 300px;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        max-width: 100vw;
-        background: black;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 4000;
-    }
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
 
-    .burger-btn {
-        font-size: 20px;
-        padding: 8px;
-        margin-top: 25px;
-        cursor: pointer;
-        border: none;
-        border-radius: 50%;
-    }
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
 
-    .burger-btn.open {
-        width: 30px;
-        margin-top: 25px;
+    background-color: none;
+  }
 
-        background-color: none;
-    }
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
 
-    .burger-menu {
-        position: absolute;
-        top: 0px;
-        left: 10px;
-        z-index: 0;
-        font-size: 10px;
-        width: 100%;
-    }
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
 
-    .panels-only {
-        display: flex;
-        /* flex-direction: column; */
-        justify-content: center;
-    }
+  .panels-card {
+    margin-top: 200px;
+  }
 
-    .panels-card {
-        margin-top: 200px;
-    }
+  .footer-for-progress {
+    width: 100%;
+  }
 
-    .footer-for-progress {
-        width: 100%;
-    }
+  .footer {
+    font-size: 20px;
+  }
 
-    .footer {
-        font-size: 20px;
-    }
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
 
-    .history {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 10px;
-    }
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
 
-    .history-list {
-        max-width: 350px;
-        width: 200px;
-    }
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .panels-row > .panel-card,
-    .panels-row > .food-card,
-    .panels-row > .waterpanel {
-        width: 100%;
-        max-width: 300px;
-    }
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
 
-    .panel-row {
-        width: 100%;
-        max-width: 100%;
-        font-size: 18px;
-    }
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
 
-    .panel-row input {
-        width: 100%;
-        max-width: 100%;
-        margin: 8px 0;
-        font-size: 16px;
-    }
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
 
-    .close-btn {
-        font-size: 10px;
-        width: 15px;
-        height: 30px;
-    }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
 
-    .calories-summary,
-    .water-summary {
-        width: 100%;
-        max-width: 300px;
-        min-height: 180px;
-    }
-
-    .menuApp,
-    .account,
-    .register,
-    .greeting {
-        display: none;
-    }
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
 }
-
 @media (min-width: 1051px) {
-    .navbar {
-        padding: 5px;
-        top: 10px;
-        height: 90px;
-        border-radius: 20vh;
-        justify-content: space-around;
-        gap: 6px;
-    }
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: "Inter", sans-serif;
+    background: linear-gradient(
+      135deg,
+      #0f1c2e 0%,
+      #162a4a 40%,
+      #1e4e8c 75%,
+      #2b7bcf 100%
+    );
+  }
 
-    .navbar button {
-        font-size: 10px;
-        margin-bottom: 20px;
-    }
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
 
-    .oneblock {
-        max-width: 250px;
-    }
+  .oneblock {
+    max-width: 250px;
+  }
 
-    .inputLoginName {
-        max-width: 150px;
-    }
+  .inputLoginName {
+    max-width: 150px;
+  }
 
-    .inputLoginPassword {
-        max-width: 150px;
-    }
+  .inputLoginPassword {
+    max-width: 150px;
+  }
 
-    .logged {
-        max-width: 150px;
-    }
+  .logged {
+    max-width: 150px;
+  }
 
-    .main-icon {
-        border-radius: 10%;
-    }
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
 
-    .titleApp {
-        font-size: 16px;
-        margin-left: 0;
-    }
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
 
-    .greeting {
-        display: block;
-        font-size: 14px;
-        width: auto;
-        color: white;
-    }
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
 
-    .logout {
-        display: flex !important;
-        font-size: 10px;
-        width: 100px;
-        height: 20px;
-    }
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
 
-    .logout {
-        position: relative;
-        z-index: 5000;
-    }
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    width: 100vw;
+    max-width: 100vw;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
 
-    .burger-panel {
-        position: fixed;
-        border-radius: 300px;
-        top: 80px;
-        left: 0;
-        width: 100vw;
-        max-width: 100vw;
-        background: black;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        z-index: 4000;
-    }
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
 
-    .burger-btn {
-        font-size: 20px;
-        padding: 8px;
-        margin-top: 25px;
-        cursor: pointer;
-        border: none;
-        border-radius: 50%;
-    }
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
 
-    .burger-btn.open {
-        width: 30px;
-        margin-top: 25px;
+    background-color: none;
+  }
 
-        background-color: none;
-    }
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
 
-    .burger-menu {
-        position: absolute;
-        top: 0px;
-        left: 10px;
-        z-index: 0;
-        font-size: 10px;
-        width: 100%;
-    }
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
 
-    .panels-only {
-        display: flex;
-        /* flex-direction: column; */
-        justify-content: center;
-    }
+  .panels-card {
+    margin-top: 200px;
+  }
 
-    .panels-card {
-        margin-top: 200px;
-    }
+  .footer-for-progress {
+    width: 100%;
+  }
 
-    .footer-for-progress {
-        width: 100%;
-    }
+  .footer {
+    font-size: 20px;
+  }
 
-    .footer {
-        font-size: 20px;
-    }
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
 
-    .history {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 10px;
-    }
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
 
-    .history-list {
-        max-width: 350px;
-        width: 200px;
-    }
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
 
-    .panels-row > .panel-card,
-    .panels-row > .food-card,
-    .panels-row > .waterpanel {
-        width: 100%;
-        max-width: 300px;
-    }
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
 
-    .panel-row {
-        width: 100%;
-        max-width: 100%;
-        font-size: 18px;
-    }
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
 
-    .panel-row input {
-        width: 100%;
-        max-width: 100%;
-        margin: 8px 0;
-        font-size: 16px;
-    }
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
 
-    .close-btn {
-        font-size: 10px;
-        width: 15px;
-        height: 30px;
-    }
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
 
-    .calories-summary,
-    .water-summary {
-        width: 100%;
-        max-width: 300px;
-        min-height: 180px;
-    }
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
+}
 
-    .menuApp,
-    .account,
-    .register,
-    .greeting {
-        display: none;
-    }
+@media (min-width: 1506px) {
+  body {
+    margin: 0;
+    height: 100vh;
+    font-family: "Inter", sans-serif;
+    background: linear-gradient(
+      135deg,
+      #0f1c2e 0%,
+      #162a4a 40%,
+      #1e4e8c 75%,
+      #2b7bcf 100%
+    );
+  }
+
+  .navbar button {
+    font-size: 10px;
+    margin-bottom: 20px;
+  }
+
+  .oneblock {
+    max-width: 250px;
+  }
+
+  .inputLoginName {
+    max-width: 150px;
+  }
+
+  .inputLoginPassword {
+    max-width: 150px;
+  }
+
+  .logged {
+    max-width: 150px;
+  }
+
+  .titleApp {
+    font-size: 16px;
+    margin-left: 0;
+  }
+
+  .greeting {
+    display: block;
+    font-size: 14px;
+    width: auto;
+    color: white;
+  }
+
+  .logout {
+    display: flex !important;
+    font-size: 10px;
+    width: 100px;
+    height: 20px;
+  }
+
+  .logout {
+    position: relative;
+    z-index: 5000;
+  }
+
+  .burger-panel {
+    position: fixed;
+    border-radius: 300px;
+    top: 80px;
+    left: 0;
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 4000;
+  }
+
+  .burger-btn {
+    font-size: 20px;
+    padding: 8px;
+    margin-top: 25px;
+    cursor: pointer;
+    border: none;
+    border-radius: 50%;
+  }
+
+  .burger-btn.open {
+    width: 30px;
+    margin-top: 25px;
+
+    background-color: none;
+  }
+
+  .burger-menu {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    z-index: 0;
+    font-size: 10px;
+    width: 100%;
+  }
+
+  .panels-only {
+    display: flex;
+    /* flex-direction: column; */
+    justify-content: center;
+  }
+
+  .panels-card {
+    margin-top: 200px;
+  }
+
+  .footer-for-progress {
+    width: 100%;
+  }
+
+  .footer {
+    font-size: 20px;
+  }
+
+  .history {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 10px;
+  }
+
+  .history-list {
+    max-width: 350px;
+    width: 200px;
+  }
+
+  .panels-row > .panel-card,
+  .panels-row > .food-card,
+  .panels-row > .waterpanel {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .panel-row {
+    width: 100%;
+    max-width: 100%;
+    font-size: 18px;
+  }
+
+  .panel-row input {
+    width: 100%;
+    max-width: 100%;
+    margin: 8px 0;
+    font-size: 16px;
+  }
+
+  .close-btn {
+    font-size: 10px;
+    width: 15px;
+    height: 30px;
+  }
+
+  .calories-summary,
+  .water-summary {
+    width: 100%;
+    max-width: 300px;
+    min-height: 180px;
+  }
+
+  .menuApp,
+  .account,
+  .register,
+  .greeting {
+    display: none;
+  }
+}
+
+/*============ FOOTER================ */
+
+.add-products {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid red;
+  height: 100px;
+  width: 50px;
 }
