@@ -1016,6 +1016,66 @@ input.passwordforregister:focus {
   transition: width 0.3s ease-in-out;
 }
 
+
+
+/* ===== WATER LIST ===== */
+
+.water-list {
+  list-style: none;
+  padding: 0;
+  margin: 18px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.water-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 14px 18px;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: all 0.25s ease;
+}
+
+.water-item:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(0, 255, 200, 0.25);
+}
+
+/* NAZWA */
+.water-item strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  flex: 1;
+}
+
+/* ILOŚĆ (ml) – badge */
+.water-item span {
+  padding: 6px 12px;
+  border-radius: 20px;
+
+  background: linear-gradient(135deg, #00d4ff, #00ffa3);
+  color: #001f2f;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  box-shadow: 0 6px 16px rgba(0, 255, 200, 0.35);
+}
+
 /* =========================================
    MODERN BUTTON SYSTEM
 ========================================= */
@@ -1452,16 +1512,14 @@ input[type="number"] {
   bottom: 20px;
   right: 20px;
 
+  margin-top: 20px;
+
   width: 122px;
   height: 42px;
   border-radius: 12px;
 
   background: linear-gradient(135deg, #4f8cff, #7c4dff);
   border: none;
-
-  /* display: flex;
-  align-items: center;
-  justify-content: center; */
 
   cursor: pointer;
   transition: all 0.25s ease;

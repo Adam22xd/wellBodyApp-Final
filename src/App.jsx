@@ -3,6 +3,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import { useState } from "react";
 import { useAuthContext } from "./context/AuthContext.jsx";
+import { html as beautifyHtml } from "js-beautify";
 
 import LoginForm from "./LoginForm.js";
 import RegisterForm from "./RegisterForm.js";
@@ -13,7 +14,7 @@ import WaterPanel from "./WaterPanel.jsx";
 import WaterList from "./WaterList.jsx";
 import Menu from "./Menu.js";
 import Footer from "./Footer.js";
-import style_html from "js-beautify/js/src/html/index.js";
+
 
 export default function App() {
   const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -21,11 +22,6 @@ export default function App() {
 
   const [activePanel, setActivePanel] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const [waterForm, setWaterForm] = useState({
-    name: "",
-    amount: "",
-  });
 
   /*=========FOOD MODEL i TYP ============== */
   const [foodItems, setFoodItems] = useState([]);
@@ -35,11 +31,11 @@ export default function App() {
     calories: 0,
   });
 
-  /* ========== WATER MODEL I TYP =========== */
+  /* ========== WATER MODEL =========== */
   const [waterItems, setWaterItems] = useState([]);
   const [newWater, setNewWater] = useState({
     name: "",
-    amount: 0,
+    amount: "",
   });
 
   const {
@@ -114,27 +110,31 @@ export default function App() {
   };
 
   /* ========= WATER ========= */
-const addWater = () => {
-  console.log("klik");
-  console.log(waterForm);
-
-  if (!waterForm.name.trim() || Number(waterForm.amount) <= 0) return;
-
-  const newItem = {
-    name: waterForm.name.trim(),
-    amount: Number(waterForm.amount),
-  };
-
-  setWaterItems((prev) => [...prev, newItem]);
-
-  setWaterForm({ name: "", amount: "" });
-  setActivePanel(null);
+const toggleWaterPanel = () => {
+  setActivePanel((prev) => (prev === "water" ? null : "water"));
 };
 
+const updateWater = (field, value) => {
+  setNewWater((prev) => ({
+    ...prev,
+    [field]: value,
+  }));
+};
 
-  const updateWater = () => {
-    setActivePanel((prev) => (prev === "water" ? null : "water"));
-  };
+const addWater = () => {
+  if (!newWater.name.trim() || Number(newWater.amount) <= 0) return;
+
+  setWaterItems((prev) => [
+    ...prev,
+    {
+      name: newWater.name.trim(),
+      amount: Number(newWater.amount),
+    },
+  ]);
+
+  setNewWater({ name: "", amount: "" });
+  setActivePanel(null);
+};
 
   /* ========= UI ========= */
 
@@ -341,7 +341,7 @@ const addWater = () => {
                   ? `${waterItems.length} napojów`
                   : "Brak napojów"}
               </p>
-                  
+
               {waterItems.length > 0 && (
                 <div className="water-list">
                   {waterItems.map((item, index) => (
@@ -362,8 +362,7 @@ const addWater = () => {
                 />
               )}
 
-              <button className="toggle-btn" onClick={updateWater}>
-                {" "}
+              <button className="toggle-btn" onClick={toggleWaterPanel}>
                 + Add
               </button>
             </div>

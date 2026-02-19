@@ -33,7 +33,7 @@ export default function WaterPanel({
           className="input-value"
           type="text"
           value={form.name}
-          onChange={(e) => onUpdate("name", String(e.target.value))}
+          onChange={(e) => onUpdate("name", (e.target.value))}
         />
       </div>
 
