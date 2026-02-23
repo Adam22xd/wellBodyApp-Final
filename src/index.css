@@ -1328,3 +1328,160 @@ button:active {
 .panel-card:hover {
   border-color: #3b82f6;
 }
+
+
+/* =========================
+   TABLET (≤ 1024px)
+========================= */
+
+@media (max-width: 1024px) {
+
+  .app-wrapper {
+    padding: 0 20px;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+  }
+
+  .dashboard-card {
+    padding: 30px;
+  }
+
+  .hero {
+    padding: 100px 0 70px;
+  }
+
+  .hero h1 {
+    font-size: clamp(30px, 6vw, 48px);
+  }
+}
+
+/* =========================
+   MOBILE (≤ 768px)
+========================= */
+
+@media (max-width: 768px) {
+
+  /* NAVBAR */
+  .navbar {
+    padding: 16px 0;
+  }
+
+  .logo-text {
+    font-size: 16px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 80px 0 50px;
+  }
+
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  .hero p {
+    font-size: 16px;
+    padding: 0 10px;
+  }
+
+  .hero-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .primary-btn,
+  .reg-btn,
+  .toggle-btn {
+    width: 100%;
+  }
+
+  /* DASHBOARD */
+  .dashboard-title {
+    font-size: 32px;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .dashboard-card {
+    padding: 25px;
+  }
+
+  /* PANELS */
+  .panel-card {
+    padding: 35px 25px;
+  }
+
+  .panel-title {
+    font-size: 20px;
+  }
+
+  /* HISTORY */
+  .history {
+    padding: 25px;
+  }
+
+  /* FLOATING BUTTON */
+  .floating-add-btn {
+    width: 55px;
+    height: 55px;
+    font-size: 26px;
+    bottom: 25px;
+    right: 25px;
+  }
+
+}
+
+/* =========================
+   SMALL MOBILE (≤ 480px)
+========================= */
+
+@media (max-width: 480px) {
+
+  .hero h1 {
+    font-size: 24px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
+  .dashboard-title {
+    font-size: 26px;
+  }
+
+  .dashboard-card {
+    padding: 20px;
+  }
+
+  .panel-card {
+    padding: 30px 20px;
+  }
+
+  .history-item {
+    padding: 12px 15px;
+  }
+
+  input,
+  .input-value {
+    height: 44px;
+    font-size: 14px;
+  }
+
+  button {
+    height: 44px;
+    font-size: 14px;
+  }
+
+}
