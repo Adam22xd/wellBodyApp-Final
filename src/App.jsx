@@ -237,7 +237,6 @@ const addWater = () => {
             </div>
 
             <div className="hero-right">
-              <i className="fa-solid fa-chart-line"></i>
             </div>
           </header>
         )}
