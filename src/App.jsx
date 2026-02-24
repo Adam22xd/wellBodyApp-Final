@@ -4,6 +4,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import { useState } from "react";
 import { useAuthContext } from "./context/AuthContext.jsx";
 import { html as beautifyHtml } from "js-beautify";
+import BarcodeScanner from "./BarcodeScanner";
 
 import LoginForm from "./LoginForm.js";
 import RegisterForm from "./RegisterForm.js";
@@ -14,7 +15,6 @@ import WaterPanel from "./WaterPanel.jsx";
 import WaterList from "./WaterList.jsx";
 import Menu from "./Menu.js";
 import Footer from "./Footer.js";
-
 
 export default function App() {
   const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -37,6 +37,14 @@ export default function App() {
     name: "",
     amount: "",
   });
+
+  /* ==== BAR CODE ========= */
+
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
+
+  const [detectedProduct, setDetectedProduct] = useState(null);
+
+  const [manualEntry, setManualEntry] = useState(false);
 
   const {
     email,
@@ -110,30 +118,67 @@ export default function App() {
   };
 
   /* ========= WATER ========= */
-const toggleWaterPanel = () => {
-  setActivePanel((prev) => (prev === "water" ? null : "water"));
-};
+  const toggleWaterPanel = () => {
+    setActivePanel((prev) => (prev === "water" ? null : "water"));
+  };
 
-const updateWater = (field, value) => {
-  setNewWater((prev) => ({
-    ...prev,
-    [field]: value,
-  }));
-};
+  const updateWater = (field, value) => {
+    setNewWater((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
-const addWater = () => {
-  if (!newWater.name.trim() || Number(newWater.amount) <= 0) return;
+  const addWater = () => {
+    if (!newWater.name.trim() || Number(newWater.amount) <= 0) return;
 
-  setWaterItems((prev) => [
-    ...prev,
-    {
-      name: newWater.name.trim(),
-      amount: Number(newWater.amount),
-    },
-  ]);
+    setWaterItems((prev) => [
+      ...prev,
+      {
+        name: newWater.name.trim(),
+        amount: Number(newWater.amount),
+      },
+    ]);
 
-  setNewWater({ name: "", amount: "" });
-  setActivePanel(null);
+    setNewWater({ name: "", amount: "" });
+    setActivePanel(null);
+  };
+
+  /* BAR CODE FUNCKJA =======*/
+
+const fetchProductByBarcode = async (barcode) => {
+  console.log("DO FETCH IDZIE:", barcode);
+
+  if (!barcode || barcode.length < 8) {
+    console.log("Nieprawidłowy barcode — przerywam");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+    );
+
+    if (!response.ok) {
+      throw new Error("Błąd odpowiedzi serwera");
+    }
+
+    const data = await response.json();
+    console.log("ODPOWIEDŹ API:", data);
+
+    if (data.status === 1) {
+      const product = data.product;
+
+      setDetectedProduct({
+        name: product.product_name || "Nieznany produkt",
+        calories: product.nutriments?.["energy-kcal_100g"] || 0,
+      });
+    } else {
+      setManualEntry(true);
+    }
+  } catch (error) {
+    console.error("Błąd FETCH:", error);
+  }
 };
 
   /* ========= UI ========= */
@@ -215,9 +260,9 @@ const addWater = () => {
                       height="24"
                       fill="none"
                       stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
                       <circle cx="9" cy="7" r="4"></circle>
                       <path d="M3 21c0-4 3-7 6-7s6 3 6 7"></path>
@@ -227,7 +272,7 @@ const addWater = () => {
                     Zacznij teraz
                   </button>
 
-                  <button class="register-btn">
+                  <button className="register-btn">
                     <span onClick={() => setIsLoginVisible(true)}>
                       Zaloguj się
                     </span>
@@ -236,8 +281,7 @@ const addWater = () => {
               )}
             </div>
 
-            <div className="hero-right">
-            </div>
+            <div className="hero-right"></div>
           </header>
         )}
 
@@ -367,6 +411,82 @@ const addWater = () => {
             </div>
           </div>
 
+          {isScannerOpen && (
+            <BarcodeScanner
+              onDetected={(code) => {
+                fetchProductByBarcode(code);
+                setIsScannerOpen(false);
+              }}
+              onClose={() => setIsScannerOpen(false)}
+            />
+          )}
+
+          {detectedProduct && (
+            <div className="type-modal">
+              <div className="type-modal-content">
+                <h3>Co to jest?</h3>
+                <p>
+                  <strong>{detectedProduct.name}</strong>
+                </p>
+
+                <button
+                  onClick={() => {
+                    setNewFood({
+                      name: detectedProduct.name,
+                      weight: 100,
+                      calories: detectedProduct.calories,
+                    });
+                    setActivePanel("food");
+                    setDetectedProduct(null);
+                  }}
+                >
+                  🍽 Posiłek
+                </button>
+
+                <button
+                  onClick={() => {
+                    setNewWater({
+                      name: detectedProduct.name,
+                      amount: 250,
+                    });
+                    setActivePanel("water");
+                    setDetectedProduct(null);
+                  }}
+                >
+                  🥤 Napój
+                </button>
+
+                <button onClick={() => setDetectedProduct(null)}>Anuluj</button>
+              </div>
+            </div>
+          )}
+
+          {manualEntry && (
+            <div className="type-modal">
+              <div className="type-modal-content">
+                <h3>Produkt nie istnieje w bazie</h3>
+                <p>Czy chcesz dodać go ręcznie?</p>
+
+                <button
+                  onClick={() => {
+                    setDetectedProduct({
+                      name: "",
+                      calories: 0,
+                    });
+                    setManualEntry(false);
+                  }}
+                >
+                  Tak
+                </button>
+
+                <button onClick={() => setManualEntry(false)}>Anuluj</button>
+              </div>
+            </div>
+          )}
+
+          <button className="scanner" onClick={() => setIsScannerOpen(true)}>
+            Skanuj kod
+          </button>
           {/* ===== FLOATING + BUTTON ===== */}
           <button
             className="floating-add-btn"
