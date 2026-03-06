@@ -1,20 +1,24 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   createUserWithEmailAndPassword,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
-  onAuthStateChanged
 } from "firebase/auth";
+import type { FirebaseError } from "firebase/app";
 import { auth } from "./firebase";
+
+type RegisterResult = {
+  ok: boolean;
+  code?: string;
+};
 
 export default function useAuth() {
   const [email, setEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [passwordReg, setPasswordReg] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
-
-    // ✅ Synchronizacja z Firebase (najważniejsza poprawka)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setIsLoggedIn(!!user);
@@ -23,43 +27,36 @@ export default function useAuth() {
     return () => unsubscribe();
   }, []);
 
-
-  // =====================
-  // 📝 REJESTRACJA
-  // =====================
-  const register = async (email, password) => {
+  const register = async (
+    userEmail: string,
+    password: string,
+  ): Promise<RegisterResult> => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      await createUserWithEmailAndPassword(auth, userEmail, password);
       await signOut(auth);
       return { ok: true };
-    } catch (err) {
-      return { ok: false, code: err.code };
+    } catch (err: unknown) {
+      const firebaseError = err as FirebaseError;
+      return { ok: false, code: firebaseError.code };
     }
   };
 
-  // =====================
-  // 🔐 LOGOWANIE
-  // =====================
-  const loginUser = async () => {
+  const loginUser = async (): Promise<boolean> => {
     try {
       await signInWithEmailAndPassword(auth, email, loginPassword);
       return true;
-    } catch (err) {
-      console.log("Firebase login error:", err.code);
+    } catch (err: unknown) {
+      const firebaseError = err as FirebaseError;
+      console.log("Firebase login error:", firebaseError.code);
       return false;
     }
   };
 
-  // =====================
-  // 🚪 WYLOGOWANIE
-  // =====================
   const logout = async () => {
     console.log("logout start");
     await signOut(auth);
     console.log("logout DONE");
   };
-
-
 
   return {
     email,

@@ -1,20 +1,19 @@
-import "./index.css";
+﻿import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthContext } from "./context/AuthContext.jsx";
-import { html as beautifyHtml } from "js-beautify";
 import BarcodeScanner from "./BarcodeScanner";
+import { auth } from "./hooks/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
-import LoginForm from "./LoginForm.js";
-import RegisterForm from "./RegisterForm.js";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
 
-import FoodPanel from "./FoodPanel.js";
-import FoodModel from "./hooks/FoodModel";
-import WaterPanel from "./WaterPanel.jsx";
-import WaterList from "./WaterList.jsx";
-import Menu from "./Menu.js";
-import Footer from "./Footer.js";
+import FoodPanel from "./FoodPanel";
+import WaterPanel from "./WaterPanel";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
 
 export default function App() {
   const [isLoginVisible, setIsLoginVisible] = useState(false);
@@ -27,8 +26,8 @@ export default function App() {
   const [foodItems, setFoodItems] = useState([]);
   const [newFood, setNewFood] = useState({
     name: "",
-    weight: 0,
-    calories: 0,
+    weight: "",
+    calories: "",
   });
 
   /* ========== WATER MODEL =========== */
@@ -59,6 +58,144 @@ export default function App() {
     isLoggedIn,
   } = useAuthContext();
 
+  const getFirebaseToken = useCallback(async () => {
+    if (auth.currentUser) {
+      return auth.currentUser.getIdToken(true);
+    }
+
+    const user = await new Promise((resolve, reject) => {
+      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        unsubscribe();
+        if (firebaseUser) {
+          resolve(firebaseUser);
+          return;
+        }
+        reject(new Error("Brak aktywnej sesji użytkownika"));
+      });
+    });
+
+    return user.getIdToken(true);
+  }, []);
+
+  const authFetch = useCallback(async (path, options = {}) => {
+    const token = await getFirebaseToken();
+    console.log("authFetch token acquired:", !!token, path);
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {}),
+    };
+
+    return fetch(`${API_URL}${path}`, {
+      ...options,
+      headers,
+    });
+  }, [getFirebaseToken]);
+
+  const loadFoodItems = useCallback(async () => {
+    const response = await authFetch("/food");
+    if (!response.ok) {
+      throw new Error("Nie udało się pobrać posiłków");
+    }
+    const data = await response.json();
+    setFoodItems(Array.isArray(data) ? data : []);
+  }, [authFetch]);
+
+  const loadWaterItems = useCallback(async () => {
+    const response = await authFetch("/water");
+    if (!response.ok) {
+      throw new Error("Nie udało się pobrać napojów");
+    }
+    const data = await response.json();
+    setWaterItems(Array.isArray(data) ? data : []);
+  }, [authFetch]);
+
+  const getErrorMessage = async (response, fallbackMessage) => {
+    try {
+      const text = await response.text();
+      if (!text) return `${fallbackMessage} (HTTP ${response.status})`;
+      try {
+        const parsed = JSON.parse(text);
+        if (parsed?.message) {
+          return `${parsed.message} (HTTP ${response.status})`;
+        }
+      } catch {
+        return `${text} (HTTP ${response.status})`;
+      }
+      return `${fallbackMessage} (HTTP ${response.status})`;
+    } catch {
+      return fallbackMessage;
+    }
+  };
+
+  const getTimeFrameLabel = (dateValue) => {
+    if (!dateValue) return "Brak godziny";
+
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return "Brak godziny";
+
+    const hour = date.getHours();
+
+    if (hour >= 6 && hour < 10) return "Śniadanie (6:00-10:00)";
+    if (hour >= 10 && hour < 14) return "Obiad (10:00-14:00)";
+    if (hour >= 14 && hour < 16) return "Podwieczorek (14:00-16:00)";
+    if (hour >= 16 && hour < 19) return "Kolacja (16:00-19:00)";
+
+    return "Poza planem";
+  };
+
+  const formatAddedTime = (dateValue) => {
+    if (!dateValue) return "--:--";
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime())) return "--:--";
+    return date.toLocaleTimeString("pl-PL", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDashboardData = async () => {
+      if (!isLoggedIn) {
+        setFoodItems([]);
+        setWaterItems([]);
+        return;
+      }
+
+      try {
+        const [meRes, foodRes, waterRes] = await Promise.all([
+          authFetch("/auth/me"),
+          authFetch("/food"),
+          authFetch("/water"),
+        ]);
+
+        if (!meRes.ok || !foodRes.ok || !waterRes.ok) {
+          throw new Error("Nie udało się pobrać danych");
+        }
+
+        const [, foodData, waterData] = await Promise.all([
+          meRes.json(),
+          foodRes.json(),
+          waterRes.json(),
+        ]);
+
+        if (cancelled) return;
+        setFoodItems(Array.isArray(foodData) ? foodData : []);
+        setWaterItems(Array.isArray(waterData) ? waterData : []);
+      } catch (error) {
+        console.error("Błąd pobierania danych:", error);
+      }
+    };
+
+    loadDashboardData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authFetch, isLoggedIn]);
+
   /* ========= LOGIN ========= */
 
   const handleLogin = async () => {
@@ -72,13 +209,13 @@ export default function App() {
   /* ========= REJESTRACJA ========= */
 
   const handleRegister = async (email, password) => {
-    const success = await register(email, password);
-    if (success) {
+    const result = await register(email, password);
+    if (result?.ok) {
       alert("Zarejestrowano pomyślnie");
       setIsRegisterVisible(false);
     }
 
-    return success;
+    return result;
   };
 
   /* ========= PANELS ========= */
@@ -97,17 +234,38 @@ export default function App() {
 
   /* ========= FOOD ========= */
 
-  const addProduct = () => {
-    if (!newFood.name.trim() || !newFood.weight || !newFood.calories) return;
+  const addProduct = async () => {
+    const name = newFood.name.trim();
+    const weight = Number(newFood.weight);
+    const calories = Number(newFood.calories);
 
-    setFoodItems((prev) => [...prev, newFood]);
+    if (!name || weight <= 0 || calories <= 0) return;
 
-    setNewFood({
-      name: "",
-      weight: 0,
-      calories: 0,
-    });
-    setActivePanel(null);
+    try {
+      const response = await authFetch("/food", {
+        method: "POST",
+        body: JSON.stringify({ name, weight, calories }),
+      });
+
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udało się dodać posiłku",
+        );
+        throw new Error(message);
+      }
+
+      await loadFoodItems();
+      setNewFood({
+        name: "",
+        weight: "",
+        calories: "",
+      });
+      setActivePanel(null);
+    } catch (error) {
+      console.error("Błąd dodawania posiłku:", error);
+      alert(error?.message || "Nie udało się dodać posiłku.");
+    }
   };
 
   const updateFood = (field, value) => {
@@ -129,57 +287,70 @@ export default function App() {
     }));
   };
 
-  const addWater = () => {
-    if (!newWater.name.trim() || Number(newWater.amount) <= 0) return;
+  const addWater = async () => {
+    const name = newWater.name.trim();
+    const amount = Number(newWater.amount);
+    if (!name || amount <= 0) return;
 
-    setWaterItems((prev) => [
-      ...prev,
-      {
-        name: newWater.name.trim(),
-        amount: Number(newWater.amount),
-      },
-    ]);
+    try {
+      const response = await authFetch("/water", {
+        method: "POST",
+        body: JSON.stringify({ name, amount }),
+      });
 
-    setNewWater({ name: "", amount: "" });
-    setActivePanel(null);
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udało się dodać napoju",
+        );
+        throw new Error(message);
+      }
+
+      await loadWaterItems();
+      setNewWater({ name: "", amount: "" });
+      setActivePanel(null);
+    } catch (error) {
+      console.error("Błąd dodawania napoju:", error);
+      alert(error?.message || "Nie udało się dodać napoju.");
+    }
   };
 
   /* BAR CODE FUNCKJA =======*/
 
-const fetchProductByBarcode = async (barcode) => {
-  console.log("DO FETCH IDZIE:", barcode);
+  const fetchProductByBarcode = async (barcode) => {
+    console.log("DO FETCH IDZIE:", barcode);
 
-  if (!barcode || barcode.length < 8) {
-    console.log("Nieprawidłowy barcode — przerywam");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
-    );
-
-    if (!response.ok) {
-      throw new Error("Błąd odpowiedzi serwera");
+    if (!barcode || barcode.length < 8) {
+      console.log("Nieprawidłowy barcode - przerywam");
+      return;
     }
 
-    const data = await response.json();
-    console.log("ODPOWIEDŹ API:", data);
+    try {
+      const response = await fetch(
+        `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+      );
 
-    if (data.status === 1) {
-      const product = data.product;
+      if (!response.ok) {
+        throw new Error("Błąd odpowiedzi serwera");
+      }
 
-      setDetectedProduct({
-        name: product.product_name || "Nieznany produkt",
-        calories: product.nutriments?.["energy-kcal_100g"] || 0,
-      });
-    } else {
-      setManualEntry(true);
+      const data = await response.json();
+      console.log("ODPOWIEDŹ API:", data);
+
+      if (data.status === 1) {
+        const product = data.product;
+
+        setDetectedProduct({
+          name: product.product_name || "Nieznany produkt",
+          calories: product.nutriments?.["energy-kcal_100g"] || 0,
+        });
+      } else {
+        setManualEntry(true);
+      }
+    } catch (error) {
+      console.error("Błąd FETCH:", error);
     }
-  } catch (error) {
-    console.error("Błąd FETCH:", error);
-  }
-};
+  };
 
   /* ========= UI ========= */
 
@@ -272,10 +443,14 @@ const fetchProductByBarcode = async (barcode) => {
                     Zacznij teraz
                   </button>
 
-                  <button className="register-btn">
-                    <span onClick={() => setIsLoginVisible(true)}>
-                      Zaloguj się
-                    </span>
+                  <button
+                    className="register-btn"
+                    onClick={() => {
+                      setIsLoginVisible(true);
+                      setIsRegisterVisible(false);
+                    }}
+                  >
+                    <span>Zaloguj się</span>
                   </button>
                 </div>
               )}
@@ -348,13 +523,20 @@ const fetchProductByBarcode = async (barcode) => {
 
               {foodItems.length > 0 && (
                 <div className="food-list">
-                  {foodItems.map((item, index) => (
-                    <div key={index} className="food-item">
-                      <strong>{item.name}</strong>
-                      <span> {item.weight} g</span>
-                      <span> {item.calories} kcal</span>
-                    </div>
-                  ))}
+                  {foodItems.map((item, index) => {
+                    const timeLabel = getTimeFrameLabel(item.createdAt);
+                    const addedAt = formatAddedTime(item.createdAt);
+
+                    return (
+                      <div key={index} className="food-item">
+                        <strong>{item.name}</strong>
+                        <span>{item.weight} g</span>
+                        <span>{item.calories} kcal</span>
+                        <span className="time-frame-badge">{timeLabel}</span>
+                        <span className="time-added">Dodano: {addedAt}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -387,12 +569,19 @@ const fetchProductByBarcode = async (barcode) => {
 
               {waterItems.length > 0 && (
                 <div className="water-list">
-                  {waterItems.map((item, index) => (
-                    <div key={index} className="water-item">
-                      <strong>{item.name}</strong>
-                      <span> {item.amount} ml</span>
-                    </div>
-                  ))}
+                  {waterItems.map((item, index) => {
+                    const timeLabel = getTimeFrameLabel(item.createdAt);
+                    const addedAt = formatAddedTime(item.createdAt);
+
+                    return (
+                      <div key={index} className="water-item">
+                        <strong>{item.name}</strong>
+                        <span>{item.amount} ml</span>
+                        <span className="time-frame-badge">{timeLabel}</span>
+                        <span className="time-added">Dodano: {addedAt}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -484,16 +673,26 @@ const fetchProductByBarcode = async (barcode) => {
             </div>
           )}
 
-          <button className="scanner" onClick={() => setIsScannerOpen(true)}>
-            Skanuj kod
-          </button>
-          {/* ===== FLOATING + BUTTON ===== */}
-          <button
-            className="floating-add-btn"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-          >
-            +
-          </button>
+          <div className="floating-menu">
+            {isMenuOpen && (
+              <button
+                className="scanner"
+                onClick={() => {
+                  setIsScannerOpen(true);
+                  setIsMenuOpen(false);
+                }}
+              >
+                Skanuj kod
+              </button>
+            )}
+            {/* ===== FLOATING + BUTTON ===== */}
+            <button
+              className={`floating-add-btn ${isMenuOpen ? "is-open" : ""}`}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            >
+              +
+            </button>
+          </div>
         </>
       )}
     </div>
