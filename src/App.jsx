@@ -13,9 +13,12 @@ import RegisterForm from "./RegisterForm";
 import FoodPanel from "./FoodPanel";
 import WaterPanel from "./WaterPanel";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000/api";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4001/api";
 
 export default function App() {
+  useEffect(() => {
+    console.log("Using API_URL:", API_URL);
+  }, []);
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
 
