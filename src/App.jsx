@@ -13,7 +13,9 @@ import RegisterForm from "./RegisterForm";
 import FoodPanel from "./FoodPanel";
 import WaterPanel from "./WaterPanel";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4001/api";
+const API_URL =
+  import.meta.env.VITE_API_URL ??
+  (import.meta.env.DEV ? "http://localhost:4001/api" : "/api");
 
 export default function App() {
   useEffect(() => {
@@ -89,10 +91,16 @@ export default function App() {
       ...(options.headers || {}),
     };
 
-    return fetch(`${API_URL}${path}`, {
-      ...options,
-      headers,
-    });
+    try {
+      return await fetch(`${API_URL}${path}`, {
+        ...options,
+        headers,
+      });
+    } catch {
+      throw new Error(
+        "Brak połączenia z API. Ustaw poprawne VITE_API_URL dla produkcji.",
+      );
+    }
   }, [getFirebaseToken]);
 
   const loadFoodItems = useCallback(async () => {
