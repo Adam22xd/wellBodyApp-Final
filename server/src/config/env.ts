@@ -15,4 +15,7 @@ export const env = {
   firebaseWebApiKey: process.env.FIREBASE_WEB_API_KEY,
   firebaseClientEmail: process.env.FIREBASE_CLIENT_EMAIL,
   firebasePrivateKey: process.env.FIREBASE_PRIVATE_KEY,
+  firebaseServiceAccountPath:
+    process.env.FIREBASE_SERVICE_ACCOUNT_PATH ??
+    "/etc/secrets/firebase-service-account.json",
 };
