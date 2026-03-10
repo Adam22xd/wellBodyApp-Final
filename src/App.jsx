@@ -218,8 +218,12 @@ export default function App() {
 
   const getErrorMessage = async (response, fallbackMessage) => {
     try {
+      const contentType = response.headers.get("content-type") || "";
       const text = await response.text();
       if (!text) return `${fallbackMessage} (HTTP ${response.status})`;
+      if (contentType.includes("text/html")) {
+        return `${fallbackMessage} (HTTP ${response.status})`;
+      }
       try {
         const parsed = JSON.parse(text);
         if (parsed?.message) {
