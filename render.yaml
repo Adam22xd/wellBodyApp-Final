@@ -34,10 +34,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: well-body-api
-          envVarKey: RENDER_EXTERNAL_URL
+        sync: false
 
 databases:
   - name: well-body-db
