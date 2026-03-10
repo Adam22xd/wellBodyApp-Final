@@ -37,6 +37,32 @@ router.post("/", async (req, res) => {
   return res.status(201).json(entry);
 });
 
+router.put("/:id", async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) {
+    return res.status(400).json({ message: "Invalid id" });
+  }
+
+  const parsed = foodSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Invalid payload" });
+  }
+
+  const entry = await prisma.foodEntry.findFirst({
+    where: { id, firebaseUid: req.user!.firebaseUid },
+  });
+  if (!entry) {
+    return res.status(404).json({ message: "Entry not found" });
+  }
+
+  const updatedEntry = await prisma.foodEntry.update({
+    where: { id },
+    data: parsed.data,
+  });
+
+  return res.json(updatedEntry);
+});
+
 router.delete("/:id", async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id) || id <= 0) {

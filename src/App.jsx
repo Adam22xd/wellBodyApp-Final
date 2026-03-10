@@ -1,9 +1,10 @@
 ﻿import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthContext } from "./context/AuthContext.jsx";
 import BarcodeScanner from "./BarcodeScanner";
+import DayPicker from "./DayPicker.jsx";
 import { auth } from "./hooks/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -12,12 +13,71 @@ import RegisterForm from "./RegisterForm";
 
 import FoodPanel from "./FoodPanel";
 import WaterPanel from "./WaterPanel";
+import useProgress from "./hooks/useProgress.ts";
+import WeeklyOverview from "./WeeklyOverview.jsx";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ??
-  (import.meta.env.DEV ? "http://localhost:4001/api" : "/api");
+const normalizeApiUrl = (value) => value.replace(/\/+$/, "");
+
+const resolveApiUrl = () => {
+  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
+
+  if (configuredUrl) {
+    return normalizeApiUrl(configuredUrl);
+  }
+
+  if (import.meta.env.DEV) {
+    return "http://localhost:4001/api";
+  }
+
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/api`;
+  }
+
+  return "/api";
+};
+
+const API_URL = resolveApiUrl();
+const getTodayDateValue = () => new Date().toISOString().slice(0, 10);
+
+const getDateKey = (dateValue) => {
+  if (!dateValue) return "";
+
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatSelectedDate = (dateValue) => {
+  if (!dateValue) return "Dzisiaj";
+
+  const date = new Date(`${dateValue}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return "Dzisiaj";
+
+  return date.toLocaleDateString("pl-PL", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
 
 export default function App() {
+  const { getProgress } = useProgress();
+  const sanitizeGoalInput = (value) => value.replace(/\D/g, "");
+  const emptyFoodForm = {
+    name: "",
+    weight: "",
+    calories: "",
+  };
+  const emptyWaterForm = {
+    name: "",
+    amount: "",
+  };
+
   useEffect(() => {
     console.log("Using API_URL:", API_URL);
   }, []);
@@ -25,22 +85,21 @@ export default function App() {
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
 
   const [activePanel, setActivePanel] = useState(null);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState(null);
+  const [calorieGoal, setCalorieGoal] = useState(0);
+  const [waterGoal, setWaterGoal] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(getTodayDateValue);
+  const dateInputRef = useRef(null);
+  const [editingFoodId, setEditingFoodId] = useState(null);
+  const [editingWaterId, setEditingWaterId] = useState(null);
 
   /*=========FOOD MODEL i TYP ============== */
   const [foodItems, setFoodItems] = useState([]);
-  const [newFood, setNewFood] = useState({
-    name: "",
-    weight: "",
-    calories: "",
-  });
+  const [newFood, setNewFood] = useState(emptyFoodForm);
 
   /* ========== WATER MODEL =========== */
   const [waterItems, setWaterItems] = useState([]);
-  const [newWater, setNewWater] = useState({
-    name: "",
-    amount: "",
-  });
+  const [newWater, setNewWater] = useState(emptyWaterForm);
 
   /* ==== BAR CODE ========= */
 
@@ -61,6 +120,8 @@ export default function App() {
     loginUser,
     logout,
     isLoggedIn,
+    currentUser,
+    authReady,
   } = useAuthContext();
 
   const getFirebaseToken = useCallback(async () => {
@@ -121,6 +182,35 @@ export default function App() {
     setWaterItems(Array.isArray(data) ? data : []);
   }, [authFetch]);
 
+  const loadDashboardData = useCallback(async () => {
+    if (!currentUser) {
+      setFoodItems([]);
+      setWaterItems([]);
+      return;
+    }
+
+    const [meRes, foodRes, waterRes] = await Promise.all([
+      authFetch("/auth/me"),
+      authFetch("/food"),
+      authFetch("/water"),
+    ]);
+
+    if (!meRes.ok || !foodRes.ok || !waterRes.ok) {
+      throw new Error("Nie udało się pobrać danych");
+    }
+
+    const [meData, foodData, waterData] = await Promise.all([
+      meRes.json(),
+      foodRes.json(),
+      waterRes.json(),
+    ]);
+
+    setCalorieGoal(Number(meData?.user?.calorieGoal || 0));
+    setWaterGoal(Number(meData?.user?.waterGoal || 0));
+    setFoodItems(Array.isArray(foodData) ? foodData : []);
+    setWaterItems(Array.isArray(waterData) ? waterData : []);
+  }, [authFetch, currentUser]);
+
   const getErrorMessage = async (response, fallbackMessage) => {
     try {
       const text = await response.text();
@@ -138,6 +228,24 @@ export default function App() {
       return fallbackMessage;
     }
   };
+
+  async function saveGoals(nextCalorieGoal, nextWaterGoal) {
+    const response = await authFetch("/auth/goals", {
+      method: "PUT",
+      body: JSON.stringify({
+        calorieGoal: nextCalorieGoal,
+        waterGoal: nextWaterGoal,
+      }),
+    });
+
+    if (!response.ok) {
+      const message = await getErrorMessage(
+        response,
+        "Nie udalo sie zapisac celow",
+      );
+      throw new Error(message);
+    }
+  }
 
   const getTimeFrameLabel = (dateValue) => {
     if (!dateValue) return "Brak godziny";
@@ -165,53 +273,64 @@ export default function App() {
     });
   };
 
+  const visibleFoodItems = foodItems.filter(
+    (item) => getDateKey(item.createdAt) === selectedDate,
+  );
+  const visibleWaterItems = waterItems.filter(
+    (item) => getDateKey(item.createdAt) === selectedDate,
+  );
+  const selectedDateLabel = formatSelectedDate(selectedDate);
+  const totalCalories = visibleFoodItems.reduce(
+    (sum, item) => sum + Number(item.calories || 0),
+    0,
+  );
+  const totalWater = visibleWaterItems.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0,
+  );
+  const caloriesProgress = getProgress(totalCalories, calorieGoal);
+  const waterProgress = getProgress(totalWater, waterGoal);
+
   useEffect(() => {
     let cancelled = false;
 
-    const loadDashboardData = async () => {
-      if (!isLoggedIn) {
-        setFoodItems([]);
-        setWaterItems([]);
-        return;
-      }
+    if (!authReady) {
+      return undefined;
+    }
 
+    if (!isLoggedIn || !currentUser) {
+      setFoodItems([]);
+      setWaterItems([]);
+      return undefined;
+    }
+
+    const syncDashboard = async () => {
       try {
-        const [meRes, foodRes, waterRes] = await Promise.all([
-          authFetch("/auth/me"),
-          authFetch("/food"),
-          authFetch("/water"),
-        ]);
-
-        if (!meRes.ok || !foodRes.ok || !waterRes.ok) {
-          throw new Error("Nie udało się pobrać danych");
-        }
-
-        const [, foodData, waterData] = await Promise.all([
-          meRes.json(),
-          foodRes.json(),
-          waterRes.json(),
-        ]);
-
-        if (cancelled) return;
-        setFoodItems(Array.isArray(foodData) ? foodData : []);
-        setWaterItems(Array.isArray(waterData) ? waterData : []);
+        await loadDashboardData();
       } catch (error) {
-        console.error("Błąd pobierania danych:", error);
+        if (!cancelled) {
+          console.error("Błąd pobierania danych:", error);
+        }
       }
     };
 
-    loadDashboardData();
+    syncDashboard();
 
     return () => {
       cancelled = true;
     };
-  }, [authFetch, isLoggedIn]);
+  }, [authReady, currentUser, isLoggedIn, loadDashboardData]);
 
   /* ========= LOGIN ========= */
 
   const handleLogin = async () => {
     const success = await loginUser();
     if (success) {
+      try {
+        await loadDashboardData();
+      } catch (error) {
+        console.error("Błąd odświeżania danych po logowaniu:", error);
+      }
       alert("Zalogowano pomyślnie");
       setIsLoginVisible(false);
     }
@@ -235,11 +354,23 @@ export default function App() {
 
   const closePanel = () => {
     setActivePanel(null);
+    setEditingFoodId(null);
+    setEditingWaterId(null);
+    setNewFood(emptyFoodForm);
+    setNewWater(emptyWaterForm);
+  };
+
+  const openSection = (sectionName) => {
+    closePanel();
+    setActiveSection((prev) => (prev === sectionName ? null : sectionName));
   };
 
   /* ======== TOGGLE FOOD BUTTON ============ */
 
   const toggleFoodPanel = () => {
+    setEditingFoodId(null);
+    setEditingWaterId(null);
+    setNewFood(emptyFoodForm);
     setActivePanel((prev) => (prev === "food" ? null : "food"));
   };
 
@@ -253,26 +384,26 @@ export default function App() {
     if (!name || weight <= 0 || calories <= 0) return;
 
     try {
-      const response = await authFetch("/food", {
-        method: "POST",
-        body: JSON.stringify({ name, weight, calories }),
-      });
+      const response = await authFetch(
+        editingFoodId ? `/food/${editingFoodId}` : "/food",
+        {
+          method: editingFoodId ? "PUT" : "POST",
+          body: JSON.stringify({ name, weight, calories }),
+        },
+      );
 
       if (!response.ok) {
         const message = await getErrorMessage(
           response,
-          "Nie udało się dodać posiłku",
+          editingFoodId
+            ? "Nie udalo sie zapisac zmian posilku"
+            : "Nie udało się dodać posiłku",
         );
         throw new Error(message);
       }
 
       await loadFoodItems();
-      setNewFood({
-        name: "",
-        weight: "",
-        calories: "",
-      });
-      setActivePanel(null);
+      closePanel();
     } catch (error) {
       console.error("Błąd dodawania posiłku:", error);
       alert(error?.message || "Nie udało się dodać posiłku.");
@@ -288,6 +419,9 @@ export default function App() {
 
   /* ========= WATER ========= */
   const toggleWaterPanel = () => {
+    setEditingWaterId(null);
+    setEditingFoodId(null);
+    setNewWater(emptyWaterForm);
     setActivePanel((prev) => (prev === "water" ? null : "water"));
   };
 
@@ -298,28 +432,105 @@ export default function App() {
     }));
   };
 
+  const handleFoodGoalBlur = async () => {
+    try {
+      await saveGoals(calorieGoal, waterGoal);
+    } catch (error) {
+      console.error("Blad zapisu celu kalorii:", error);
+      alert(error?.message || "Nie udalo sie zapisac celu kalorii.");
+    }
+  };
+
+  const handleWaterGoalBlur = async () => {
+    try {
+      await saveGoals(calorieGoal, waterGoal);
+    } catch (error) {
+      console.error("Blad zapisu celu wody:", error);
+      alert(error?.message || "Nie udalo sie zapisac celu wody.");
+    }
+  };
+
+  const startFoodEdit = (item) => {
+    setEditingFoodId(item.id);
+    setNewFood({
+      name: item.name,
+      weight: item.weight,
+      calories: item.calories,
+    });
+    setActivePanel("food");
+  };
+
+  const startWaterEdit = (item) => {
+    setEditingWaterId(item.id);
+    setNewWater({
+      name: item.name,
+      amount: item.amount,
+    });
+    setActivePanel("water");
+  };
+
+  const deleteFood = async (id) => {
+    try {
+      const response = await authFetch(`/food/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udalo sie usunac posilku",
+        );
+        throw new Error(message);
+      }
+
+      await loadFoodItems();
+    } catch (error) {
+      console.error("Blad usuwania posilku:", error);
+      alert(error?.message || "Nie udalo sie usunac posilku.");
+    }
+  };
+
+  const deleteWater = async (id) => {
+    try {
+      const response = await authFetch(`/water/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udalo sie usunac napoju",
+        );
+        throw new Error(message);
+      }
+
+      await loadWaterItems();
+    } catch (error) {
+      console.error("Blad usuwania napoju:", error);
+      alert(error?.message || "Nie udalo sie usunac napoju.");
+    }
+  };
+
   const addWater = async () => {
     const name = newWater.name.trim();
     const amount = Number(newWater.amount);
     if (!name || amount <= 0) return;
 
     try {
-      const response = await authFetch("/water", {
-        method: "POST",
-        body: JSON.stringify({ name, amount }),
-      });
+      const response = await authFetch(
+        editingWaterId ? `/water/${editingWaterId}` : "/water",
+        {
+          method: editingWaterId ? "PUT" : "POST",
+          body: JSON.stringify({ name, amount }),
+        },
+      );
 
       if (!response.ok) {
         const message = await getErrorMessage(
           response,
-          "Nie udało się dodać napoju",
+          editingWaterId
+            ? "Nie udalo sie zapisac zmian napoju"
+            : "Nie udało się dodać napoju",
         );
         throw new Error(message);
       }
 
       await loadWaterItems();
-      setNewWater({ name: "", amount: "" });
-      setActivePanel(null);
+      closePanel();
     } catch (error) {
       console.error("Błąd dodawania napoju:", error);
       alert(error?.message || "Nie udało się dodać napoju.");
@@ -380,6 +591,35 @@ export default function App() {
           <div className="nav-right">
             {isLoggedIn ? (
               <>
+                <DayPicker
+                  selectedDate={selectedDate}
+                  dateInputRef={dateInputRef}
+                  onChange={setSelectedDate}
+                />
+                <button
+                  type="button"
+                  className={`nav-icon-btn ${activeSection === "food" ? "is-active" : ""}`}
+                  onClick={() => openSection("food")}
+                  title="Posilki"
+                >
+                  <i className="fa-solid fa-utensils" />
+                </button>
+                <button
+                  type="button"
+                  className={`nav-icon-btn ${activeSection === "water" ? "is-active" : ""}`}
+                  onClick={() => openSection("water")}
+                  title="Napoje"
+                >
+                  <i className="fa-solid fa-glass-water" />
+                </button>
+                <button
+                  type="button"
+                  className={`nav-icon-btn ${isScannerOpen ? "is-active" : ""}`}
+                  onClick={() => setIsScannerOpen(true)}
+                  title="Skaner"
+                >
+                  <i className="fa-solid fa-barcode" />
+                </button>
                 <span className="user-badge">PL</span>
 
                 <button
@@ -387,7 +627,7 @@ export default function App() {
                   onClick={async () => {
                     console.log("klik");
                     await logout();
-                    setIsMenuOpen(false);
+                    setActiveSection(null);
                     // alert("klik działa");
                   }}
                 >
@@ -516,35 +756,117 @@ export default function App() {
           {/* HEADER */}
 
           <header className="dashboard-header">
-            <h1 className="dashboard-title">Dzisiaj</h1>
+            <h1 className="dashboard-title">{selectedDateLabel}</h1>
           </header>
-          <div className="dashboard-cards">
+          {!activeSection && (
+          <>
+          <section className="dashboard-summary">
+            <div className="summary-card">
+              <div className="summary-head">
+                <div>
+                  <p className="summary-kicker">Suma z posiłków</p>
+                  <h2>Kalorie</h2>
+                </div>
+                <input
+                  className="summary-goal-input"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={calorieGoal}
+                  onChange={(e) =>
+                    setCalorieGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+                  }
+                  onBlur={handleFoodGoalBlur}
+                />
+              </div>
+              <p className="summary-value">
+                {totalCalories} / {calorieGoal} kcal
+              </p>
+              <div className="progressbar summary-progress">
+                <div style={{ width: `${caloriesProgress}%` }} />
+              </div>
+            </div>
+
+            <div className="summary-card">
+              <div className="summary-head">
+                <div>
+                  <p className="summary-kicker">Suma z napojów</p>
+                  <h2>Woda</h2>
+                </div>
+                <input
+                  className="summary-goal-input"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={waterGoal}
+                  onChange={(e) =>
+                    setWaterGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+                  }
+                  onBlur={handleWaterGoalBlur}
+                />
+              </div>
+              <p className="summary-value">
+                {totalWater} / {waterGoal} ml
+              </p>
+              <div className="progressbar summary-progress water">
+                <div style={{ width: `${waterProgress}%` }} />
+              </div>
+            </div>
+          </section>
+          <WeeklyOverview
+            selectedDate={selectedDate}
+            foodItems={foodItems}
+            waterItems={waterItems}
+          />
+          </>
+          )}
+          {activeSection && (
+            <div className="dashboard-cards">
             {/* ======================================================================================================= POSIŁKI ===== */}
-            <div className="dashboard-card">
+            {activeSection === "food" && (
+            <div className="dashboard-card dashboard-card-single">
               <h2>Posiłki</h2>
               <div className="card-icon">
                 <i className="fa-solid fa-utensils"></i>
               </div>
 
               <p>
-                {foodItems.length
-                  ? `${foodItems.length} posiłków`
+                {visibleFoodItems.length
+                  ? `${visibleFoodItems.length} posiłków`
                   : "Brak posiłków"}
               </p>
 
-              {foodItems.length > 0 && (
+              {visibleFoodItems.length > 0 && (
                 <div className="food-list">
-                  {foodItems.map((item, index) => {
+                  {visibleFoodItems.map((item) => {
                     const timeLabel = getTimeFrameLabel(item.createdAt);
                     const addedAt = formatAddedTime(item.createdAt);
 
                     return (
-                      <div key={index} className="food-item">
-                        <strong>{item.name}</strong>
-                        <span>{item.weight} g</span>
-                        <span>{item.calories} kcal</span>
-                        <span className="time-frame-badge">{timeLabel}</span>
-                        <span className="time-added">Dodano: {addedAt}</span>
+                      <div key={item.id} className="food-item">
+                        <div className="entry-main">
+                          <strong>{item.name}</strong>
+                          <span>{item.weight} g</span>
+                          <span>{item.calories} kcal</span>
+                          <span className="time-frame-badge">{timeLabel}</span>
+                          <span className="time-added">Dodano: {addedAt}</span>
+                        </div>
+                        <div className="entry-actions">
+                          <button
+                            type="button"
+                            className="entry-action edit"
+                            onClick={() => startFoodEdit(item)}
+                          >
+                            Edytuj
+                          </button>
+                          <button
+                            type="button"
+                            className="entry-action delete"
+                            onClick={() => deleteFood(item.id)}
+                          >
+                            Usun
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -557,6 +879,8 @@ export default function App() {
                   onClose={closePanel}
                   onUpdate={updateFood}
                   onAdd={addProduct}
+                  title={editingFoodId ? "Edytuj posilek" : "Posilki"}
+                  submitLabel={editingFoodId ? "Zapisz zmiany" : "Dodaj produkt"}
                 />
               )}
               <button className="toggle-btn" onClick={toggleFoodPanel}>
@@ -564,32 +888,52 @@ export default function App() {
                 + Add
               </button>
             </div>
+            )}
 
             {/* ============================================================================================================== NAPOJE ===== */}
-            <div className="dashboard-card">
+            {activeSection === "water" && (
+            <div className="dashboard-card dashboard-card-single">
               <h2>Napoje</h2>
               <div className="card-icon">
                 <i className="fa-solid fa-glass-water"></i>
               </div>
 
               <p>
-                {waterItems.length
-                  ? `${waterItems.length} napojów`
+                {visibleWaterItems.length
+                  ? `${visibleWaterItems.length} napojów`
                   : "Brak napojów"}
               </p>
 
-              {waterItems.length > 0 && (
+              {visibleWaterItems.length > 0 && (
                 <div className="water-list">
-                  {waterItems.map((item, index) => {
+                  {visibleWaterItems.map((item) => {
                     const timeLabel = getTimeFrameLabel(item.createdAt);
                     const addedAt = formatAddedTime(item.createdAt);
 
                     return (
-                      <div key={index} className="water-item">
-                        <strong>{item.name}</strong>
-                        <span>{item.amount} ml</span>
-                        <span className="time-frame-badge">{timeLabel}</span>
-                        <span className="time-added">Dodano: {addedAt}</span>
+                      <div key={item.id} className="water-item">
+                        <div className="entry-main">
+                          <strong>{item.name}</strong>
+                          <span>{item.amount} ml</span>
+                          <span className="time-frame-badge">{timeLabel}</span>
+                          <span className="time-added">Dodano: {addedAt}</span>
+                        </div>
+                        <div className="entry-actions">
+                          <button
+                            type="button"
+                            className="entry-action edit"
+                            onClick={() => startWaterEdit(item)}
+                          >
+                            Edytuj
+                          </button>
+                          <button
+                            type="button"
+                            className="entry-action delete"
+                            onClick={() => deleteWater(item.id)}
+                          >
+                            Usun
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -602,6 +946,8 @@ export default function App() {
                   onUpdate={updateWater}
                   onAdd={addWater}
                   onClose={closePanel}
+                  title={editingWaterId ? "Edytuj napoj" : "Napoje"}
+                  submitLabel={editingWaterId ? "Zapisz zmiany" : "Dodaj napoj"}
                 />
               )}
 
@@ -609,7 +955,9 @@ export default function App() {
                 + Add
               </button>
             </div>
+            )}
           </div>
+          )}
 
           {isScannerOpen && (
             <BarcodeScanner
@@ -683,27 +1031,6 @@ export default function App() {
               </div>
             </div>
           )}
-
-          <div className="floating-menu">
-            {isMenuOpen && (
-              <button
-                className="scanner"
-                onClick={() => {
-                  setIsScannerOpen(true);
-                  setIsMenuOpen(false);
-                }}
-              >
-                Skanuj kod
-              </button>
-            )}
-            {/* ===== FLOATING + BUTTON ===== */}
-            <button
-              className={`floating-add-btn ${isMenuOpen ? "is-open" : ""}`}
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-            >
-              +
-            </button>
-          </div>
         </>
       )}
     </div>

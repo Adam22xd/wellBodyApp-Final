@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  type User,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -18,10 +19,14 @@ export default function useAuth() {
   const [loginPassword, setLoginPassword] = useState("");
   const [passwordReg, setPasswordReg] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
       setIsLoggedIn(!!user);
+      setAuthReady(true);
     });
 
     return () => unsubscribe();
@@ -69,5 +74,7 @@ export default function useAuth() {
     loginUser,
     logout,
     isLoggedIn,
+    currentUser,
+    authReady,
   };
 }

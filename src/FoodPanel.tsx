@@ -9,6 +9,8 @@ interface FoodProps {
   onClose: () => void;
   onUpdate: (field: keyof FoodModel, value: string | number) => void;
   onAdd: () => void;
+  title?: string;
+  submitLabel?: string;
 }
 
 export default function FoodPanel({
@@ -16,14 +18,16 @@ export default function FoodPanel({
   onClose,
   onUpdate,
   onAdd,
+  title = "Posilki",
+  submitLabel = "Dodaj produkt",
 }: FoodProps) {
   return (
     <div className="panel-card">
       <button className="close-btn" onClick={onClose}>
-        ✕
+        x
       </button>
 
-      <h2 className="panel-title">Posiłki</h2>
+      <h2 className="panel-title">{title}</h2>
 
       <div className="panel-row">
         <label>Danie</label>
@@ -68,7 +72,7 @@ export default function FoodPanel({
       </div>
 
       <button onClick={onAdd} className="add-btn">
-        Dodaj produkt
+        {submitLabel}
       </button>
     </div>
   );

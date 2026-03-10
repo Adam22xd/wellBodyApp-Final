@@ -16,6 +16,8 @@ model User {
   id          Int      @id @default(autoincrement())
   firebaseUid String   @unique @map("firebase_uid")
   email       String?
+  calorieGoal Int      @default(0) @map("calorie_goal")
+  waterGoal   Int      @default(0) @map("water_goal")
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("users")

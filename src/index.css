@@ -558,12 +558,66 @@ button:active {
 
 .log-btn,
 .reg-btn,
+.calendar-btn,
 .logout-btn {
   height: 42px;
   padding: 0 20px;
   border-radius: 12px;
   font-weight: 600;
   transition: 0.25s ease;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nav-icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #cbd5e1;
+  transition: 0.25s ease;
+}
+
+.nav-icon-btn:hover,
+.nav-icon-btn.is-active {
+  color: #22c55e;
+  border-color: rgba(34,197,94,0.6);
+  background: rgba(34,197,94,0.12);
+}
+
+.day-picker {
+  position: relative;
+}
+
+.calendar-btn {
+  width: 42px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.calendar-btn:hover {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.calendar-native-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .log-btn {
@@ -656,6 +710,122 @@ button:active {
   -webkit-text-fill-color: transparent;
 }
 
+.dashboard-summary {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.summary-card {
+  padding: 28px;
+  border-radius: 24px;
+  background: rgba(17,24,39,0.72);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+}
+
+.summary-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.summary-kicker {
+  margin: 0 0 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #94a3b8;
+}
+
+.summary-head h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.summary-goal-input {
+  width: 96px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+}
+
+.summary-value {
+  margin: 20px 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.summary-progress {
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.95);
+}
+
+.summary-progress div {
+  background: linear-gradient(90deg,#22c55e,#84cc16);
+}
+
+.summary-progress.water div {
+  background: linear-gradient(90deg,#38bdf8,#22d3ee);
+}
+
+.weekly-overview {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.weekly-card {
+  padding: 28px;
+  border-radius: 24px;
+  background: rgba(17,24,39,0.72);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.weekly-bars {
+  margin-top: 22px;
+  height: 180px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weekly-bar-group {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+}
+
+.weekly-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 999px 999px 12px 12px;
+  background: linear-gradient(180deg,#22c55e,#84cc16);
+}
+
+.weekly-bar.water {
+  background: linear-gradient(180deg,#38bdf8,#22d3ee);
+}
+
+.weekly-bar-group span {
+  font-size: 12px;
+  color: #94a3b8;
+  text-transform: capitalize;
+}
+
 /* =========================
    DASHBOARD GRID
 ========================= */
@@ -680,6 +850,11 @@ button:active {
   transition: 0.3s ease;
   position: relative;
   overflow: hidden;
+}
+
+.dashboard-card-single {
+  max-width: 860px;
+  margin: 0 auto;
 }
 
 .dashboard-card:hover {
@@ -711,12 +886,48 @@ button:active {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.05);
   transition: 0.2s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .food-item:hover,
 .water-item:hover {
   transform: scale(1.02);
   border-color: #22c55e;
+}
+
+.entry-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.entry-action {
+  min-width: 72px;
+  height: 34px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.entry-action.edit {
+  background: linear-gradient(135deg,#3b82f6,#2563eb);
+}
+
+.entry-action.delete {
+  background: linear-gradient(135deg,#ef4444,#dc2626);
+}
+
+.floating-menu {
+  display: none;
 }
 
 /* =========================
