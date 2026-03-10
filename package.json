@@ -9,6 +9,7 @@
     "server:dev": "tsx watch server/src/index.ts",
     "server:start": "tsx server/src/index.ts",
     "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint ."

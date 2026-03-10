@@ -3,7 +3,7 @@ services:
     name: well-body-api
     runtime: node
     plan: free
-    buildCommand: npm ci --include=dev && npm run prisma:generate
+    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run prisma:push
     startCommand: npm run server:start
     healthCheckPath: /health
     envVars:
