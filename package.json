@@ -8,6 +8,7 @@
     "dev": "vite",
     "server:dev": "tsx watch server/src/index.ts",
     "server:start": "tsx server/src/index.ts",
+    "prisma:generate": "prisma generate",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint ."

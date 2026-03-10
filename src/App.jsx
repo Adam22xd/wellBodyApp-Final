@@ -18,11 +18,16 @@ import WeeklyOverview from "./WeeklyOverview.jsx";
 
 const normalizeApiUrl = (value) => value.replace(/\/+$/, "");
 
+const ensureApiPath = (value) => {
+  const normalized = normalizeApiUrl(value);
+  return normalized.endsWith("/api") ? normalized : `${normalized}/api`;
+};
+
 const resolveApiUrl = () => {
   const configuredUrl = import.meta.env.VITE_API_URL?.trim();
 
   if (configuredUrl) {
-    return normalizeApiUrl(configuredUrl);
+    return ensureApiPath(configuredUrl);
   }
 
   if (import.meta.env.DEV) {
