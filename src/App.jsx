@@ -131,12 +131,17 @@ export default function App() {
 
   const getFirebaseToken = useCallback(async () => {
     if (auth.currentUser) {
-      return auth.currentUser.getIdToken(true);
+      return auth.currentUser.getIdToken();
     }
 
     const user = await new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error("Brak aktywnej sesji użytkownika"));
+      }, 5000);
+
       const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
         unsubscribe();
+        clearTimeout(timeoutId);
         if (firebaseUser) {
           resolve(firebaseUser);
           return;
@@ -145,11 +150,22 @@ export default function App() {
       });
     });
 
-    return user.getIdToken(true);
+    return user.getIdToken();
   }, []);
 
   const authFetch = useCallback(async (path, options = {}) => {
-    const token = await getFirebaseToken();
+    let token;
+
+    try {
+      token = await getFirebaseToken();
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Nie udało się pobrać tokenu użytkownika";
+      throw new Error(message);
+    }
+
     console.log("authFetch token acquired:", !!token, path);
     const headers = {
       Authorization: `Bearer ${token}`,
@@ -162,7 +178,8 @@ export default function App() {
         ...options,
         headers,
       });
-    } catch {
+    } catch (error) {
+      console.error("authFetch network error:", error);
       throw new Error(
         "Brak połączenia z API. Ustaw poprawne VITE_API_URL dla produkcji.",
       );
