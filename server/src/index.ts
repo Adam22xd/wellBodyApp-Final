@@ -6,25 +6,10 @@ import foodRoutes from "./routes/food.routes";
 import waterRoutes from "./routes/water.routes";
 
 const app = express();
-const allowedOriginPatterns = [
-  /^https:\/\/well-body-app\.onrender\.com$/,
-  /^http:\/\/localhost:\d+$/,
-  /^http:\/\/127\.0\.0\.1:\d+$/,
-];
 
 app.use(
   cors({
-    origin(origin, callback) {
-      if (
-        !origin ||
-        allowedOriginPatterns.some((pattern) => pattern.test(origin))
-      ) {
-        callback(null, true);
-        return;
-      }
-
-      callback(new Error(`Blocked by CORS: ${origin}`));
-    },
+    origin: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
