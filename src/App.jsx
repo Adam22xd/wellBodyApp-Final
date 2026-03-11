@@ -1,66 +1,53 @@
-﻿import "./index.css";
+import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAuthContext } from "./context/AuthContext.jsx";
-import BarcodeScanner from "./BarcodeScanner";
-import DayPicker from "./DayPicker.jsx";
-import { auth } from "./hooks/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-
+import BarcodeScanner from "./BarcodeScanner";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
-
-import FoodPanel from "./FoodPanel";
-import WaterPanel from "./WaterPanel";
 import useProgress from "./hooks/useProgress.ts";
-import WeeklyOverview from "./WeeklyOverview.jsx";
+import { auth } from "./hooks/firebase";
+import { useAuthContext } from "./context/AuthContext.jsx";
 import { getDateKey, formatSelectedDate, getTodayDateValue } from "./utils/date.js";
-import { getApiCandidates, getErrorMessage, resolveApiUrl } from "./utils/api.js";
+import { getApiCandidates, getErrorMessage } from "./utils/api.js";
+import { sanitizeGoalInput } from "./utils/dashboard.js";
+import AppNavbar from "./components/layout/AppNavbar.jsx";
+import DashboardSummary from "./components/dashboard/DashboardSummary.jsx";
+import TrackerSection from "./components/dashboard/TrackerSection.jsx";
 
-const API_URL = resolveApiUrl();
 const API_CANDIDATES = getApiCandidates();
+
+const EMPTY_FOOD_FORM = {
+  name: "",
+  weight: "",
+  calories: "",
+};
+
+const EMPTY_WATER_FORM = {
+  name: "",
+  amount: "",
+};
 
 export default function App() {
   const { getProgress } = useProgress();
-  const sanitizeGoalInput = (value) => value.replace(/\D/g, "");
-  const emptyFoodForm = {
-    name: "",
-    weight: "",
-    calories: "",
-  };
-  const emptyWaterForm = {
-    name: "",
-    amount: "",
-  };
-
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
-
   const [activePanel, setActivePanel] = useState(null);
   const [activeSection, setActiveSection] = useState(null);
   const [calorieGoal, setCalorieGoal] = useState(0);
   const [waterGoal, setWaterGoal] = useState(0);
   const [selectedDate, setSelectedDate] = useState(getTodayDateValue);
-  const dateInputRef = useRef(null);
   const [editingFoodId, setEditingFoodId] = useState(null);
   const [editingWaterId, setEditingWaterId] = useState(null);
-
-  /*=========FOOD MODEL i TYP ============== */
   const [foodItems, setFoodItems] = useState([]);
-  const [newFood, setNewFood] = useState(emptyFoodForm);
-
-  /* ========== WATER MODEL =========== */
+  const [newFood, setNewFood] = useState(EMPTY_FOOD_FORM);
   const [waterItems, setWaterItems] = useState([]);
-  const [newWater, setNewWater] = useState(emptyWaterForm);
-
-  /* ==== BAR CODE ========= */
-
+  const [newWater, setNewWater] = useState(EMPTY_WATER_FORM);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-
   const [detectedProduct, setDetectedProduct] = useState(null);
-
   const [manualEntry, setManualEntry] = useState(false);
+  const dateInputRef = useRef(null);
 
   const {
     email,
@@ -90,10 +77,12 @@ export default function App() {
       const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
         unsubscribe();
         clearTimeout(timeoutId);
+
         if (firebaseUser) {
           resolve(firebaseUser);
           return;
         }
+
         reject(new Error("Brak aktywnej sesji użytkownika"));
       });
     });
@@ -113,6 +102,7 @@ export default function App() {
           : "Nie udało się pobrać tokenu użytkownika";
       throw new Error(message);
     }
+
     const headers = {
       Authorization: `Bearer ${token}`,
       ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -143,6 +133,7 @@ export default function App() {
     if (!response.ok) {
       throw new Error("Nie udało się pobrać posiłków");
     }
+
     const data = await response.json();
     setFoodItems(Array.isArray(data) ? data : []);
   }, [authFetch]);
@@ -152,6 +143,7 @@ export default function App() {
     if (!response.ok) {
       throw new Error("Nie udało się pobrać napojów");
     }
+
     const data = await response.json();
     setWaterItems(Array.isArray(data) ? data : []);
   }, [authFetch]);
@@ -185,7 +177,7 @@ export default function App() {
     setWaterItems(Array.isArray(waterData) ? waterData : []);
   }, [authFetch, currentUser]);
 
-  async function saveGoals(nextCalorieGoal, nextWaterGoal) {
+  const saveGoals = useCallback(async (nextCalorieGoal, nextWaterGoal) => {
     const response = await authFetch("/auth/goals", {
       method: "PUT",
       body: JSON.stringify({
@@ -201,138 +193,50 @@ export default function App() {
       );
       throw new Error(message);
     }
-  }
+  }, [authFetch]);
 
-  const getTimeFrameLabel = (dateValue) => {
-    if (!dateValue) return "Brak godziny";
-
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return "Brak godziny";
-
-    const hour = date.getHours();
-
-    if (hour >= 6 && hour < 10) return "Śniadanie (6:00-10:00)";
-    if (hour >= 10 && hour < 14) return "Obiad (10:00-14:00)";
-    if (hour >= 14 && hour < 16) return "Podwieczorek (14:00-16:00)";
-    if (hour >= 16 && hour < 19) return "Kolacja (16:00-19:00)";
-
-    return "Poza planem";
-  };
-
-  const formatAddedTime = (dateValue) => {
-    if (!dateValue) return "--:--";
-    const date = new Date(dateValue);
-    if (Number.isNaN(date.getTime())) return "--:--";
-    return date.toLocaleTimeString("pl-PL", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const visibleFoodItems = foodItems.filter(
-    (item) => getDateKey(item.createdAt) === selectedDate,
-  );
-  const visibleWaterItems = waterItems.filter(
-    (item) => getDateKey(item.createdAt) === selectedDate,
-  );
-  const selectedDateLabel = formatSelectedDate(selectedDate);
-  const totalCalories = visibleFoodItems.reduce(
-    (sum, item) => sum + Number(item.calories || 0),
-    0,
-  );
-  const totalWater = visibleWaterItems.reduce(
-    (sum, item) => sum + Number(item.amount || 0),
-    0,
-  );
-  const caloriesProgress = getProgress(totalCalories, calorieGoal);
-  const waterProgress = getProgress(totalWater, waterGoal);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!authReady) {
-      return undefined;
-    }
-
-    if (!isLoggedIn || !currentUser) {
-      setFoodItems([]);
-      setWaterItems([]);
-      return undefined;
-    }
-
-    const syncDashboard = async () => {
-      try {
-        await loadDashboardData();
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Błąd pobierania danych:", error);
-        }
-      }
-    };
-
-    syncDashboard();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [authReady, currentUser, isLoggedIn, loadDashboardData]);
-
-  /* ========= LOGIN ========= */
-
-  const handleLogin = async () => {
-    const success = await loginUser();
-    if (success) {
-      try {
-        await loadDashboardData();
-      } catch (error) {
-        console.error("Błąd odświeżania danych po logowaniu:", error);
-      }
-      alert("Zalogowano pomyślnie");
-      setIsLoginVisible(false);
-    }
-  };
-
-  /* ========= REJESTRACJA ========= */
-
-  const handleRegister = async (email, password) => {
-    const result = await register(email, password);
-    if (result?.ok) {
-      alert("Zarejestrowano pomyślnie");
-      setIsRegisterVisible(false);
-    }
-
-    return result;
-  };
-
-  /* ========= PANELS ========= */
-
-  /* === CLOSE BUTTON === */
-
-  const closePanel = () => {
+  const closePanel = useCallback(() => {
     setActivePanel(null);
     setEditingFoodId(null);
     setEditingWaterId(null);
-    setNewFood(emptyFoodForm);
-    setNewWater(emptyWaterForm);
-  };
+    setNewFood(EMPTY_FOOD_FORM);
+    setNewWater(EMPTY_WATER_FORM);
+  }, []);
 
-  const openSection = (sectionName) => {
+  const openSection = useCallback((sectionName) => {
     closePanel();
     setActiveSection((prev) => (prev === sectionName ? null : sectionName));
-  };
+  }, [closePanel]);
 
-  /* ======== TOGGLE FOOD BUTTON ============ */
-
-  const toggleFoodPanel = () => {
+  const toggleFoodPanel = useCallback(() => {
     setEditingFoodId(null);
     setEditingWaterId(null);
-    setNewFood(emptyFoodForm);
+    setNewFood(EMPTY_FOOD_FORM);
     setActivePanel((prev) => (prev === "food" ? null : "food"));
-  };
+  }, []);
 
-  /* ========= FOOD ========= */
+  const toggleWaterPanel = useCallback(() => {
+    setEditingWaterId(null);
+    setEditingFoodId(null);
+    setNewWater(EMPTY_WATER_FORM);
+    setActivePanel((prev) => (prev === "water" ? null : "water"));
+  }, []);
 
-  const addProduct = async () => {
+  const updateFood = useCallback((field, value) => {
+    setNewFood((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  const updateWater = useCallback((field, value) => {
+    setNewWater((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  }, []);
+
+  const addProduct = useCallback(async () => {
     const name = newFood.name.trim();
     const weight = Number(newFood.weight);
     const calories = Number(newFood.calories);
@@ -364,106 +268,12 @@ export default function App() {
       console.error("Błąd dodawania posiłku:", error);
       alert(error?.message || "Nie udało się dodać posiłku.");
     }
-  };
+  }, [authFetch, closePanel, editingFoodId, loadFoodItems, newFood]);
 
-  const updateFood = (field, value) => {
-    setNewFood((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  /* ========= WATER ========= */
-  const toggleWaterPanel = () => {
-    setEditingWaterId(null);
-    setEditingFoodId(null);
-    setNewWater(emptyWaterForm);
-    setActivePanel((prev) => (prev === "water" ? null : "water"));
-  };
-
-  const updateWater = (field, value) => {
-    setNewWater((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleFoodGoalBlur = async () => {
-    try {
-      await saveGoals(calorieGoal, waterGoal);
-    } catch (error) {
-      console.error("Blad zapisu celu kalorii:", error);
-      alert(error?.message || "Nie udalo sie zapisac celu kalorii.");
-    }
-  };
-
-  const handleWaterGoalBlur = async () => {
-    try {
-      await saveGoals(calorieGoal, waterGoal);
-    } catch (error) {
-      console.error("Blad zapisu celu wody:", error);
-      alert(error?.message || "Nie udalo sie zapisac celu wody.");
-    }
-  };
-
-  const startFoodEdit = (item) => {
-    setEditingFoodId(item.id);
-    setNewFood({
-      name: item.name,
-      weight: item.weight,
-      calories: item.calories,
-    });
-    setActivePanel("food");
-  };
-
-  const startWaterEdit = (item) => {
-    setEditingWaterId(item.id);
-    setNewWater({
-      name: item.name,
-      amount: item.amount,
-    });
-    setActivePanel("water");
-  };
-
-  const deleteFood = async (id) => {
-    try {
-      const response = await authFetch(`/food/${id}`, { method: "DELETE" });
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          "Nie udalo sie usunac posilku",
-        );
-        throw new Error(message);
-      }
-
-      await loadFoodItems();
-    } catch (error) {
-      console.error("Blad usuwania posilku:", error);
-      alert(error?.message || "Nie udalo sie usunac posilku.");
-    }
-  };
-
-  const deleteWater = async (id) => {
-    try {
-      const response = await authFetch(`/water/${id}`, { method: "DELETE" });
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          "Nie udalo sie usunac napoju",
-        );
-        throw new Error(message);
-      }
-
-      await loadWaterItems();
-    } catch (error) {
-      console.error("Blad usuwania napoju:", error);
-      alert(error?.message || "Nie udalo sie usunac napoju.");
-    }
-  };
-
-  const addWater = async () => {
+  const addWater = useCallback(async () => {
     const name = newWater.name.trim();
     const amount = Number(newWater.amount);
+
     if (!name || amount <= 0) return;
 
     try {
@@ -491,11 +301,84 @@ export default function App() {
       console.error("Błąd dodawania napoju:", error);
       alert(error?.message || "Nie udało się dodać napoju.");
     }
-  };
+  }, [authFetch, closePanel, editingWaterId, loadWaterItems, newWater]);
 
-  /* BAR CODE FUNCKJA =======*/
+  const deleteFood = useCallback(async (id) => {
+    try {
+      const response = await authFetch(`/food/${id}`, { method: "DELETE" });
 
-  const fetchProductByBarcode = async (barcode) => {
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udalo sie usunac posilku",
+        );
+        throw new Error(message);
+      }
+
+      await loadFoodItems();
+    } catch (error) {
+      console.error("Blad usuwania posilku:", error);
+      alert(error?.message || "Nie udalo sie usunac posilku.");
+    }
+  }, [authFetch, loadFoodItems]);
+
+  const deleteWater = useCallback(async (id) => {
+    try {
+      const response = await authFetch(`/water/${id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udalo sie usunac napoju",
+        );
+        throw new Error(message);
+      }
+
+      await loadWaterItems();
+    } catch (error) {
+      console.error("Blad usuwania napoju:", error);
+      alert(error?.message || "Nie udalo sie usunac napoju.");
+    }
+  }, [authFetch, loadWaterItems]);
+
+  const handleFoodGoalBlur = useCallback(async () => {
+    try {
+      await saveGoals(calorieGoal, waterGoal);
+    } catch (error) {
+      console.error("Blad zapisu celu kalorii:", error);
+      alert(error?.message || "Nie udalo sie zapisac celu kalorii.");
+    }
+  }, [calorieGoal, saveGoals, waterGoal]);
+
+  const handleWaterGoalBlur = useCallback(async () => {
+    try {
+      await saveGoals(calorieGoal, waterGoal);
+    } catch (error) {
+      console.error("Blad zapisu celu wody:", error);
+      alert(error?.message || "Nie udalo sie zapisac celu wody.");
+    }
+  }, [calorieGoal, saveGoals, waterGoal]);
+
+  const startFoodEdit = useCallback((item) => {
+    setEditingFoodId(item.id);
+    setNewFood({
+      name: item.name,
+      weight: item.weight,
+      calories: item.calories,
+    });
+    setActivePanel("food");
+  }, []);
+
+  const startWaterEdit = useCallback((item) => {
+    setEditingWaterId(item.id);
+    setNewWater({
+      name: item.name,
+      amount: item.amount,
+    });
+    setActivePanel("water");
+  }, []);
+
+  const fetchProductByBarcode = useCallback(async (barcode) => {
     if (!barcode || barcode.length < 8) {
       return;
     }
@@ -508,6 +391,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error("Błąd odpowiedzi serwera");
       }
+
       const data = await response.json();
 
       if (data.status === 1) {
@@ -523,93 +407,108 @@ export default function App() {
     } catch (error) {
       console.error("Błąd FETCH:", error);
     }
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!authReady) {
+      return undefined;
+    }
+
+    if (!isLoggedIn || !currentUser) {
+      setFoodItems([]);
+      setWaterItems([]);
+      return undefined;
+    }
+
+    const syncDashboard = async () => {
+      try {
+        await loadDashboardData();
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Błąd pobierania danych:", error);
+        }
+      }
+    };
+
+    syncDashboard();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, currentUser, isLoggedIn, loadDashboardData]);
+
+  const handleLogin = async () => {
+    const success = await loginUser();
+
+    if (success) {
+      try {
+        await loadDashboardData();
+      } catch (error) {
+        console.error("Błąd odświeżania danych po logowaniu:", error);
+      }
+
+      alert("Zalogowano pomyślnie");
+      setIsLoginVisible(false);
+    }
   };
 
-  /* ========= UI ========= */
+  const handleRegister = async (nextEmail, password) => {
+    const result = await register(nextEmail, password);
+
+    if (result?.ok) {
+      alert("Zarejestrowano pomyślnie");
+      setIsRegisterVisible(false);
+    }
+
+    return result;
+  };
+
+  const visibleFoodItems = foodItems.filter(
+    (item) => getDateKey(item.createdAt) === selectedDate,
+  );
+  const visibleWaterItems = waterItems.filter(
+    (item) => getDateKey(item.createdAt) === selectedDate,
+  );
+  const selectedDateLabel = formatSelectedDate(selectedDate);
+  const totalCalories = visibleFoodItems.reduce(
+    (sum, item) => sum + Number(item.calories || 0),
+    0,
+  );
+  const totalWater = visibleWaterItems.reduce(
+    (sum, item) => sum + Number(item.amount || 0),
+    0,
+  );
+  const caloriesProgress = getProgress(totalCalories, calorieGoal);
+  const waterProgress = getProgress(totalWater, waterGoal);
 
   return (
     <div className="main-icon">
       <div className="app-wrapper">
-        {/* ========= NAVBAR ========= */}
-        <nav className="navbar">
-          <div className="nav-left">
-            <div className="logo">
-              <div className="logo-icon">💻</div>
-              <span className="logo-text">Fitness List</span>
-            </div>
-          </div>
+        <AppNavbar
+          isLoggedIn={isLoggedIn}
+          selectedDate={selectedDate}
+          dateInputRef={dateInputRef}
+          onDateChange={setSelectedDate}
+          activeSection={activeSection}
+          isScannerOpen={isScannerOpen}
+          onOpenSection={openSection}
+          onOpenScanner={() => setIsScannerOpen(true)}
+          onLogout={async () => {
+            await logout();
+            setActiveSection(null);
+          }}
+          onShowLogin={() => {
+            setIsLoginVisible(true);
+            setIsRegisterVisible(false);
+          }}
+          onShowRegister={() => {
+            setIsRegisterVisible(true);
+            setIsLoginVisible(false);
+          }}
+        />
 
-          <div className="nav-right">
-            {isLoggedIn ? (
-              <>
-                <DayPicker
-                  selectedDate={selectedDate}
-                  dateInputRef={dateInputRef}
-                  onChange={setSelectedDate}
-                />
-                <button
-                  type="button"
-                  className={`nav-icon-btn ${activeSection === "food" ? "is-active" : ""}`}
-                  onClick={() => openSection("food")}
-                  title="Posilki"
-                >
-                  <i className="fa-solid fa-utensils" />
-                </button>
-                <button
-                  type="button"
-                  className={`nav-icon-btn ${activeSection === "water" ? "is-active" : ""}`}
-                  onClick={() => openSection("water")}
-                  title="Napoje"
-                >
-                  <i className="fa-solid fa-glass-water" />
-                </button>
-                <button
-                  type="button"
-                  className={`nav-icon-btn ${isScannerOpen ? "is-active" : ""}`}
-                  onClick={() => setIsScannerOpen(true)}
-                  title="Skaner"
-                >
-                  <i className="fa-solid fa-barcode" />
-                </button>
-                <span className="user-badge">PL</span>
-
-                <button
-                  className="logout-btn"
-                  onClick={async () => {
-                    await logout();
-                    setActiveSection(null);
-                  }}
-                >
-                  Wyloguj się
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  className="log-btn"
-                  onClick={() => {
-                    setIsLoginVisible(true);
-                    setIsRegisterVisible(false);
-                  }}
-                >
-                  <span className="log-title"> Zaloguj </span>
-                </button>
-
-                <button
-                  className="reg-btn"
-                  onClick={() => {
-                    setIsRegisterVisible(true);
-                    setIsLoginVisible(false);
-                  }}
-                >
-                  <span className="reg-title">Zarejestruj</span>
-                </button>
-              </>
-            )}
-          </div>
-        </nav>
-
-        {/* HEADER LEPSZY WYGLĄD */}
         {!isLoginVisible && !isRegisterVisible && !isLoggedIn && (
           <header className="hero">
             <div className="hero-left">
@@ -635,10 +534,10 @@ export default function App() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     >
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M3 21c0-4 3-7 6-7s6 3 6 7"></path>
-                      <line x1="18" y1="8" x2="18" y2="14"></line>
-                      <line x1="15" y1="11" x2="21" y2="11"></line>
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M3 21c0-4 3-7 6-7s6 3 6 7" />
+                      <line x1="18" y1="8" x2="18" y2="14" />
+                      <line x1="15" y1="11" x2="21" y2="11" />
                     </svg>
                     Zacznij teraz
                   </button>
@@ -656,15 +555,12 @@ export default function App() {
               )}
             </div>
 
-            <div className="hero-right"></div>
+            <div className="hero-right" />
           </header>
         )}
 
-        {/* ========= MODAL SYSTEM ========= */}
-
         {(isLoginVisible || isRegisterVisible) && (
           <div className="modal-wrapper">
-            {/* Overlay */}
             <div
               className="overlay"
               onClick={() => {
@@ -673,7 +569,6 @@ export default function App() {
               }}
             />
 
-            {/* Modal Content */}
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               {isLoginVisible && (
                 <LoginForm
@@ -702,210 +597,72 @@ export default function App() {
 
       {isLoggedIn && (
         <>
-          {/* HEADER */}
-
           <header className="dashboard-header">
             <h1 className="dashboard-title">{selectedDateLabel}</h1>
           </header>
-          {!activeSection && (
-          <>
-          <section className="dashboard-summary">
-            <div className="summary-card">
-              <div className="summary-head">
-                <div>
-                  <p className="summary-kicker">Suma z posiłków</p>
-                  <h2>Kalorie</h2>
-                </div>
-                <input
-                  className="summary-goal-input"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={calorieGoal}
-                  onChange={(e) =>
-                    setCalorieGoal(Number(sanitizeGoalInput(e.target.value) || 0))
-                  }
-                  onBlur={handleFoodGoalBlur}
-                />
-              </div>
-              <p className="summary-value">
-                {totalCalories} / {calorieGoal} kcal
-              </p>
-              <div className="progressbar summary-progress">
-                <div style={{ width: `${caloriesProgress}%` }} />
-              </div>
-            </div>
 
-            <div className="summary-card">
-              <div className="summary-head">
-                <div>
-                  <p className="summary-kicker">Suma z napojów</p>
-                  <h2>Woda</h2>
-                </div>
-                <input
-                  className="summary-goal-input"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={waterGoal}
-                  onChange={(e) =>
-                    setWaterGoal(Number(sanitizeGoalInput(e.target.value) || 0))
-                  }
-                  onBlur={handleWaterGoalBlur}
-                />
-              </div>
-              <p className="summary-value">
-                {totalWater} / {waterGoal} ml
-              </p>
-              <div className="progressbar summary-progress water">
-                <div style={{ width: `${waterProgress}%` }} />
-              </div>
-            </div>
-          </section>
-          <WeeklyOverview
-            selectedDate={selectedDate}
-            foodItems={foodItems}
-            waterItems={waterItems}
-          />
-          </>
+          {!activeSection && (
+            <DashboardSummary
+              selectedDate={selectedDate}
+              totalCalories={totalCalories}
+              calorieGoal={calorieGoal}
+              totalWater={totalWater}
+              waterGoal={waterGoal}
+              caloriesProgress={caloriesProgress}
+              waterProgress={waterProgress}
+              onCalorieGoalChange={(e) =>
+                setCalorieGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+              }
+              onWaterGoalChange={(e) =>
+                setWaterGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+              }
+              onCalorieGoalBlur={handleFoodGoalBlur}
+              onWaterGoalBlur={handleWaterGoalBlur}
+              foodItems={foodItems}
+              waterItems={waterItems}
+            />
           )}
+
           {activeSection && (
             <div className="dashboard-cards">
-            {/* ======================================================================================================= POSIŁKI ===== */}
-            {activeSection === "food" && (
-            <div className="dashboard-card dashboard-card-single">
-              <h2>Posiłki</h2>
-              <div className="card-icon">
-                <i className="fa-solid fa-utensils"></i>
-              </div>
-
-              <p>
-                {visibleFoodItems.length
-                  ? `${visibleFoodItems.length} posiłków`
-                  : "Brak posiłków"}
-              </p>
-
-              {visibleFoodItems.length > 0 && (
-                <div className="food-list">
-                  {visibleFoodItems.map((item) => {
-                    const timeLabel = getTimeFrameLabel(item.createdAt);
-                    const addedAt = formatAddedTime(item.createdAt);
-
-                    return (
-                      <div key={item.id} className="food-item">
-                        <div className="entry-main">
-                          <strong>{item.name}</strong>
-                          <span>{item.weight} g</span>
-                          <span>{item.calories} kcal</span>
-                          <span className="time-frame-badge">{timeLabel}</span>
-                          <span className="time-added">Dodano: {addedAt}</span>
-                        </div>
-                        <div className="entry-actions">
-                          <button
-                            type="button"
-                            className="entry-action edit"
-                            onClick={() => startFoodEdit(item)}
-                          >
-                            Edytuj
-                          </button>
-                          <button
-                            type="button"
-                            className="entry-action delete"
-                            onClick={() => deleteFood(item.id)}
-                          >
-                            Usun
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {activePanel === "food" && (
-                <FoodPanel
-                  model={newFood}
-                  onClose={closePanel}
-                  onUpdate={updateFood}
-                  onAdd={addProduct}
-                  title={editingFoodId ? "Edytuj posilek" : "Posilki"}
-                  submitLabel={editingFoodId ? "Zapisz zmiany" : "Dodaj produkt"}
-                />
-              )}
-              <button className="toggle-btn" onClick={toggleFoodPanel}>
-                {" "}
-                + Add
-              </button>
-            </div>
-            )}
-
-            {/* ============================================================================================================== NAPOJE ===== */}
-            {activeSection === "water" && (
-            <div className="dashboard-card dashboard-card-single">
-              <h2>Napoje</h2>
-              <div className="card-icon">
-                <i className="fa-solid fa-glass-water"></i>
-              </div>
-
-              <p>
-                {visibleWaterItems.length
-                  ? `${visibleWaterItems.length} napojów`
-                  : "Brak napojów"}
-              </p>
-
-              {visibleWaterItems.length > 0 && (
-                <div className="water-list">
-                  {visibleWaterItems.map((item) => {
-                    const timeLabel = getTimeFrameLabel(item.createdAt);
-                    const addedAt = formatAddedTime(item.createdAt);
-
-                    return (
-                      <div key={item.id} className="water-item">
-                        <div className="entry-main">
-                          <strong>{item.name}</strong>
-                          <span>{item.amount} ml</span>
-                          <span className="time-frame-badge">{timeLabel}</span>
-                          <span className="time-added">Dodano: {addedAt}</span>
-                        </div>
-                        <div className="entry-actions">
-                          <button
-                            type="button"
-                            className="entry-action edit"
-                            onClick={() => startWaterEdit(item)}
-                          >
-                            Edytuj
-                          </button>
-                          <button
-                            type="button"
-                            className="entry-action delete"
-                            onClick={() => deleteWater(item.id)}
-                          >
-                            Usun
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-
-              {activePanel === "water" && (
-                <WaterPanel
-                  form={newWater}
-                  onUpdate={updateWater}
-                  onAdd={addWater}
-                  onClose={closePanel}
-                  title={editingWaterId ? "Edytuj napoj" : "Napoje"}
-                  submitLabel={editingWaterId ? "Zapisz zmiany" : "Dodaj napoj"}
+              {activeSection === "food" && (
+                <TrackerSection
+                  type="food"
+                  items={visibleFoodItems}
+                  activePanel={activePanel}
+                  editingId={editingFoodId}
+                  foodForm={newFood}
+                  waterForm={newWater}
+                  onStartEdit={startFoodEdit}
+                  onDelete={deleteFood}
+                  onTogglePanel={toggleFoodPanel}
+                  onClosePanel={closePanel}
+                  onUpdateFood={updateFood}
+                  onUpdateWater={updateWater}
+                  onAddFood={addProduct}
+                  onAddWater={addWater}
                 />
               )}
 
-              <button className="toggle-btn" onClick={toggleWaterPanel}>
-                + Add
-              </button>
+              {activeSection === "water" && (
+                <TrackerSection
+                  type="water"
+                  items={visibleWaterItems}
+                  activePanel={activePanel}
+                  editingId={editingWaterId}
+                  foodForm={newFood}
+                  waterForm={newWater}
+                  onStartEdit={startWaterEdit}
+                  onDelete={deleteWater}
+                  onTogglePanel={toggleWaterPanel}
+                  onClosePanel={closePanel}
+                  onUpdateFood={updateFood}
+                  onUpdateWater={updateWater}
+                  onAddFood={addProduct}
+                  onAddWater={addWater}
+                />
+              )}
             </div>
-            )}
-          </div>
           )}
 
           {isScannerOpen && (
