@@ -13,6 +13,7 @@ body {
   color: #f8fafc;
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 /* =========================
@@ -21,6 +22,7 @@ body {
 .main-icon {
   min-height: 100vh;
   padding-bottom: 80px;
+  overflow-x: hidden;
 }
 
 /* =========================
@@ -571,6 +573,8 @@ button:active {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .nav-icon-btn {
@@ -642,6 +646,23 @@ button:active {
 .logout-btn {
   background: linear-gradient(135deg,#ef4444,#dc2626);
   color: white;
+  max-width: 100%;
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
 }
 
 /* =========================
@@ -1607,6 +1628,20 @@ button:active {
   /* NAVBAR */
   .navbar {
     padding: 16px 0;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .nav-left,
+  .nav-right {
+    width: 100%;
+  }
+
+  .nav-right {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 10px;
   }
 
   .logo-text {
@@ -1617,6 +1652,18 @@ button:active {
     width: 36px;
     height: 36px;
     font-size: 16px;
+  }
+
+  .day-picker,
+  .nav-icon-btn,
+  .user-badge {
+    flex: 0 0 auto;
+  }
+
+  .logout-btn {
+    width: 100%;
+    flex: 1 1 100%;
+    padding: 0 16px;
   }
 
   /* HERO */
@@ -1658,9 +1705,29 @@ button:active {
     padding: 25px;
   }
 
+  .dashboard-summary,
+  .weekly-overview {
+    gap: 18px;
+  }
+
   /* PANELS */
   .panel-card {
+    width: 100%;
+    max-width: none;
     padding: 35px 25px;
+  }
+
+  .food-item,
+  .water-item {
+    flex-direction: column;
+  }
+
+  .entry-actions {
+    width: 100%;
+  }
+
+  .entry-action {
+    flex: 1;
   }
 
   .panel-title {
@@ -1681,6 +1748,31 @@ button:active {
     right: 25px;
   }
 
+  .scanner-shell {
+    padding: 18px 14px;
+  }
+
+  .scanner-stage {
+    border-radius: 20px;
+    min-height: 52svh;
+  }
+
+  .scanner-close {
+    width: 100%;
+  }
+
+  .dashboard-card:hover,
+  .food-item:hover,
+  .water-item:hover,
+  .primary-btn:hover,
+  .register-btn:hover,
+  .logout-btn:hover,
+  .toggle-btn:hover,
+  .entry-action:hover,
+  .nav-icon-btn:hover {
+    transform: none;
+  }
+
 }
 
 /* =========================
@@ -1688,6 +1780,10 @@ button:active {
 ========================= */
 
 @media (max-width: 480px) {
+
+  .app-wrapper {
+    padding: 0 14px;
+  }
 
   .hero h1 {
     font-size: 24px;
@@ -1707,6 +1803,23 @@ button:active {
 
   .panel-card {
     padding: 30px 20px;
+  }
+
+  .summary-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .summary-goal-input {
+    width: 100%;
+  }
+
+  .scanner-shell {
+    padding: 14px 12px 20px;
+  }
+
+  .scanner-stage {
+    min-height: 46svh;
   }
 
   .history-item {
@@ -1822,6 +1935,101 @@ button:active {
 
 .floating-menu .floating-add-btn.is-open {
   transform: rotate(45deg);
+}
+
+.scanner-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  background: rgba(2, 6, 23, 0.92);
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  overscroll-behavior: contain;
+}
+
+.scanner-shell {
+  width: min(100%, 960px);
+  min-height: 100vh;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.scanner-close {
+  align-self: flex-end;
+  min-width: 120px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #f8fafc;
+}
+
+.scanner-copy {
+  text-align: center;
+}
+
+.scanner-kicker {
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  color: #38bdf8;
+}
+
+.scanner-copy h2 {
+  font-size: clamp(28px, 4vw, 42px);
+}
+
+.scanner-copy span {
+  display: block;
+  margin-top: 10px;
+  color: #cbd5e1;
+}
+
+.scanner-stage {
+  position: relative;
+  flex: 1;
+  min-height: 420px;
+  border-radius: 28px;
+  overflow: hidden;
+  background: #020617;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.scanner-frame-box {
+  width: min(72vw, 320px);
+  aspect-ratio: 1;
+  border: 3px solid rgba(56,189,248,0.95);
+  border-radius: 28px;
+  box-shadow:
+    0 0 0 999px rgba(2,6,23,0.34),
+    0 0 30px rgba(56,189,248,0.28);
+}
+
+.scanner-error {
+  margin: 0;
+  text-align: center;
+  color: #fca5a5;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 @keyframes menuSlideIn {
