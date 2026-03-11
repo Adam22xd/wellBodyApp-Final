@@ -23,6 +23,27 @@ const ensureApiPath = (value) => {
   return normalized.endsWith("/api") ? normalized : `${normalized}/api`;
 };
 
+const getApiCandidates = () => {
+  const candidates = [];
+  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
+
+  if (configuredUrl) {
+    candidates.push(ensureApiPath(configuredUrl));
+  }
+
+  if (import.meta.env.DEV) {
+    candidates.push("http://localhost:4001/api");
+  }
+
+  candidates.push("https://well-body-api.onrender.com/api");
+
+  if (typeof window !== "undefined") {
+    candidates.push(`${window.location.origin}/api`);
+  }
+
+  return [...new Set(candidates.filter(Boolean))];
+};
+
 const resolveApiUrl = () => {
   const configuredUrl = import.meta.env.VITE_API_URL?.trim();
 
@@ -42,6 +63,7 @@ const resolveApiUrl = () => {
 };
 
 const API_URL = resolveApiUrl();
+const API_CANDIDATES = getApiCandidates();
 const getTodayDateValue = () => new Date().toISOString().slice(0, 10);
 
 const getDateKey = (dateValue) => {
@@ -85,6 +107,7 @@ export default function App() {
 
   useEffect(() => {
     console.log("Using API_URL:", API_URL);
+    console.log("API candidates:", API_CANDIDATES);
   }, []);
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
@@ -173,17 +196,24 @@ export default function App() {
       ...(options.headers || {}),
     };
 
-    try {
-      return await fetch(`${API_URL}${path}`, {
-        ...options,
-        headers,
-      });
-    } catch (error) {
-      console.error("authFetch network error:", error);
-      throw new Error(
-        "Brak połączenia z API. Ustaw poprawne VITE_API_URL dla produkcji.",
-      );
+    let lastError;
+
+    for (const apiBase of API_CANDIDATES) {
+      try {
+        return await fetch(`${apiBase}${path}`, {
+          ...options,
+          headers,
+        });
+      } catch (error) {
+        lastError = error;
+        console.error("authFetch network error:", apiBase, error);
+      }
     }
+
+    throw new Error(
+      `Brak połączenia z API. Sprawdzone adresy: ${API_CANDIDATES.join(", ")}.`,
+      { cause: lastError },
+    );
   }, [getFirebaseToken]);
 
   const loadFoodItems = useCallback(async () => {
