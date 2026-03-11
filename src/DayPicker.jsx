@@ -35,6 +35,7 @@ export default function DayPicker({
         value={selectedDate}
         onChange={(e) => onChange(e.target.value)}
         aria-label="Wybierz dzien"
+        tabIndex={-1}
       />
     </div>
   );
