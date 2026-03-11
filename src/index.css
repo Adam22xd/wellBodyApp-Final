@@ -1645,12 +1645,13 @@ button:active {
   }
 
   .nav-right {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, max-content));
-    justify-content: flex-start;
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
     align-items: center;
-    gap: 10px;
-    row-gap: 12px;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
 
   .logo-text {
@@ -1665,14 +1666,18 @@ button:active {
 
   .day-picker,
   .nav-icon-btn,
-  .user-badge {
+  .logout-btn {
     flex: 0 0 auto;
   }
 
+  .user-badge {
+    display: none;
+  }
+
   .logout-btn {
-    grid-column: 1 / -1;
-    width: 100%;
-    padding: 0 16px;
+    min-width: 110px;
+    padding: 0 14px;
+    font-size: 13px;
   }
 
   /* HERO */
@@ -1795,14 +1800,7 @@ button:active {
   }
 
   .nav-right {
-    grid-template-columns: repeat(4, minmax(0, max-content));
-  }
-
-  .user-badge {
-    min-width: 36px;
-    height: 36px;
-    padding: 0 10px;
-    font-size: 12px;
+    gap: 6px;
   }
 
   .hero h1 {
