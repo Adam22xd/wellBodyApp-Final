@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
 import foodRoutes from "./routes/food.routes";
@@ -7,13 +6,28 @@ import waterRoutes from "./routes/water.routes";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  }),
-);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  } else {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+  }
+
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,OPTIONS",
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  return next();
+});
 app.use(express.json());
 
 app.get("/health", (_req, res) => {
