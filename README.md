@@ -1,90 +1,95 @@
-## 🗂️ Repository
+# Well Body
 
-https://github.com/Adam22xd/wellBodyApp-Final.git
+Live demo: `https://well-body-app.onrender.com`
 
-# Live Demo //
+Well Body is a full-stack calorie and hydration tracking app built as a portfolio project. It includes user authentication, a production API, PostgreSQL persistence, weekly summaries, and mobile-oriented UI.
 
-https://well-body-app-final.vercel.app
+## Stack
 
-## 🧰 Tech Stack
+- React 19 + Vite
+- Express 5
+- Prisma + PostgreSQL
+- Firebase Authentication
+- Firebase Admin
+- Render
 
-- ⚛️ React
-- 🟦 TypeScript
-- ⚡ Vite
-- 🎨 CSS / Tailwind (jeśli używasz)
-- 🌐 HTML5
+## Features
 
----
+- User registration and login
+- Protected API routes with Firebase token verification
+- Daily water and calorie tracking
+- Edit and delete entries
+- Daily goals for calories and water
+- Weekly overview for recent activity
+- Barcode scanner for product lookup
+- Responsive mobile-first layout
 
-# 💧🍎 Aplikacja do monitorowania nawodnienia i kalorii
+## Architecture
 
-Aplikacja webowa umożliwiająca monitorowanie dziennego spożycia wody oraz kalorii.
-Projekt stworzony w React z wykorzystaniem Firebase do obsługi autoryzacji użytkowników.
+- `src/` contains the React frontend
+- `server/src/` contains the Express API
+- `prisma/schema.prisma` defines the PostgreSQL models
+- Firebase handles identity
+- Prisma handles persistence
+- Render hosts the frontend, backend, and database
 
----
+## What This Project Demonstrates
 
-## 🔍 Opis aplikacji
+- End-to-end deployment of a full-stack app
+- Frontend and backend integration with authenticated requests
+- Production environment setup with secrets and service accounts
+- Debugging real deployment issues such as CORS, mobile UI behavior, and database initialization
 
-Użytkownik po rejestracji i zalogowaniu ma dostęp do panelu, w którym może:
+## Local Development
 
-- zapisywać ilość wypitej wody
-- zapisywać spożyte kalorie
-- zarządzać danymi w ramach własnego konta
-
-Interfejs aplikacji oparty jest o burger menu, które umożliwia nawigację pomiędzy
-dwoma głównymi zakładkami: **Woda** oraz **Kalorie**.
-
-Aplikacja została zaprojektowana w podejściu **mobile-first** i jest w pełni
-responsywna na urządzenia mobilne oraz desktopowe.
-
----
-
-## ⚙️ Funkcjonalności
-
-- Rejestracja i logowanie użytkownika (Firebase Authentication)
-- Panel użytkownika po zalogowaniu
-- Burger menu z nawigacją
-- Dodawanie ilości wypitej wody
-- Dodawanie spożytych kalorii
-- Przekazywanie danych pomiędzy komponentami
-- Zarządzanie stanem aplikacji w React
-- Ochrona widoków dla zalogowanych użytkowników
-- Responsywny interfejs (mobile & desktop)
-
----
-
-## 🛠️ Technologie
-
-- React
-- TypeScript
-- Vite
-- Firebase (Authentication)
-- HTML5
-- CSS3
-
----
-
-## 👨‍💻 Autor
-
-Projekt wykonany samodzielnie — od koncepcji po implementację — z wykorzystaniem
-wsparcia AI na etapie nauki i rozwoju aplikacji.
-
----
-
-## 🚀 TODO / Planowany rozwój
-
-- Zapisywanie danych w bazie danych Firebase
-- Statystyki dzienne i tygodniowe
-- Wykresy nawodnienia i kalorii
-- Ustalanie dziennych celów
-- Edycja i usuwanie wpisów
-- Testy komponentów
-
----
-
-## 📦 Uruchomienie projektu lokalnie
+### 1. Install dependencies
 
 ```bash
 npm install
+```
+
+### 2. Configure environment variables
+
+Create a root `.env` file with:
+
+```env
+DATABASE_URL=
+PORT=4001
+FIREBASE_PROJECT_ID=
+FIREBASE_WEB_API_KEY=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
+VITE_API_URL=http://localhost:4001/api
+```
+
+### 3. Run the frontend
+
+```bash
 npm run dev
 ```
+
+### 4. Run the backend
+
+```bash
+npm run server:dev
+```
+
+### 5. Sync Prisma schema
+
+```bash
+npm run prisma:push
+```
+
+## Production Notes
+
+- Frontend and backend are deployed separately on Render
+- Backend exposes `GET /health`
+- The frontend uses `VITE_API_URL` and production fallbacks for API access
+- Firebase Admin can run from env vars or a Render secret file
+
+## Next Improvements
+
+- Split remaining dashboard logic into smaller hooks/components
+- Add tests for auth and API flows
+- Reduce frontend bundle size
+- Improve analytics and progress visualizations

@@ -15,82 +15,11 @@ import FoodPanel from "./FoodPanel";
 import WaterPanel from "./WaterPanel";
 import useProgress from "./hooks/useProgress.ts";
 import WeeklyOverview from "./WeeklyOverview.jsx";
-
-const normalizeApiUrl = (value) => value.replace(/\/+$/, "");
-
-const ensureApiPath = (value) => {
-  const normalized = normalizeApiUrl(value);
-  return normalized.endsWith("/api") ? normalized : `${normalized}/api`;
-};
-
-const getApiCandidates = () => {
-  const candidates = [];
-  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
-
-  if (configuredUrl) {
-    candidates.push(ensureApiPath(configuredUrl));
-  }
-
-  if (import.meta.env.DEV) {
-    candidates.push("http://localhost:4001/api");
-  }
-
-  candidates.push("https://well-body-api.onrender.com/api");
-
-  if (typeof window !== "undefined") {
-    candidates.push(`${window.location.origin}/api`);
-  }
-
-  return [...new Set(candidates.filter(Boolean))];
-};
-
-const resolveApiUrl = () => {
-  const configuredUrl = import.meta.env.VITE_API_URL?.trim();
-
-  if (configuredUrl) {
-    return ensureApiPath(configuredUrl);
-  }
-
-  if (import.meta.env.DEV) {
-    return "http://localhost:4001/api";
-  }
-
-  if (typeof window !== "undefined") {
-    return `${window.location.origin}/api`;
-  }
-
-  return "/api";
-};
+import { getDateKey, formatSelectedDate, getTodayDateValue } from "./utils/date.js";
+import { getApiCandidates, getErrorMessage, resolveApiUrl } from "./utils/api.js";
 
 const API_URL = resolveApiUrl();
 const API_CANDIDATES = getApiCandidates();
-const getTodayDateValue = () => new Date().toISOString().slice(0, 10);
-
-const getDateKey = (dateValue) => {
-  if (!dateValue) return "";
-
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const formatSelectedDate = (dateValue) => {
-  if (!dateValue) return "Dzisiaj";
-
-  const date = new Date(`${dateValue}T12:00:00`);
-  if (Number.isNaN(date.getTime())) return "Dzisiaj";
-
-  return date.toLocaleDateString("pl-PL", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
 
 export default function App() {
   const { getProgress } = useProgress();
@@ -105,10 +34,6 @@ export default function App() {
     amount: "",
   };
 
-  useEffect(() => {
-    console.log("Using API_URL:", API_URL);
-    console.log("API candidates:", API_CANDIDATES);
-  }, []);
   const [isLoginVisible, setIsLoginVisible] = useState(false);
   const [isRegisterVisible, setIsRegisterVisible] = useState(false);
 
@@ -188,8 +113,6 @@ export default function App() {
           : "Nie udało się pobrać tokenu użytkownika";
       throw new Error(message);
     }
-
-    console.log("authFetch token acquired:", !!token, path);
     const headers = {
       Authorization: `Bearer ${token}`,
       ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -206,7 +129,6 @@ export default function App() {
         });
       } catch (error) {
         lastError = error;
-        console.error("authFetch network error:", apiBase, error);
       }
     }
 
@@ -262,28 +184,6 @@ export default function App() {
     setFoodItems(Array.isArray(foodData) ? foodData : []);
     setWaterItems(Array.isArray(waterData) ? waterData : []);
   }, [authFetch, currentUser]);
-
-  const getErrorMessage = async (response, fallbackMessage) => {
-    try {
-      const contentType = response.headers.get("content-type") || "";
-      const text = await response.text();
-      if (!text) return `${fallbackMessage} (HTTP ${response.status})`;
-      if (contentType.includes("text/html")) {
-        return `${fallbackMessage} (HTTP ${response.status})`;
-      }
-      try {
-        const parsed = JSON.parse(text);
-        if (parsed?.message) {
-          return `${parsed.message} (HTTP ${response.status})`;
-        }
-      } catch {
-        return `${text} (HTTP ${response.status})`;
-      }
-      return `${fallbackMessage} (HTTP ${response.status})`;
-    } catch {
-      return fallbackMessage;
-    }
-  };
 
   async function saveGoals(nextCalorieGoal, nextWaterGoal) {
     const response = await authFetch("/auth/goals", {
@@ -596,10 +496,7 @@ export default function App() {
   /* BAR CODE FUNCKJA =======*/
 
   const fetchProductByBarcode = async (barcode) => {
-    console.log("DO FETCH IDZIE:", barcode);
-
     if (!barcode || barcode.length < 8) {
-      console.log("Nieprawidłowy barcode - przerywam");
       return;
     }
 
@@ -611,9 +508,7 @@ export default function App() {
       if (!response.ok) {
         throw new Error("Błąd odpowiedzi serwera");
       }
-
       const data = await response.json();
-      console.log("ODPOWIEDŹ API:", data);
 
       if (data.status === 1) {
         const product = data.product;
@@ -681,10 +576,8 @@ export default function App() {
                 <button
                   className="logout-btn"
                   onClick={async () => {
-                    console.log("klik");
                     await logout();
                     setActiveSection(null);
-                    // alert("klik działa");
                   }}
                 >
                   Wyloguj się
