@@ -1,45 +1,11 @@
-const getDayKey = (dateValue) => {
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return "";
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
-const createLastSevenDays = (selectedDate) => {
-  const baseDate = new Date(`${selectedDate}T12:00:00`);
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(baseDate);
-    date.setDate(baseDate.getDate() - (6 - index));
-    return date;
-  });
-};
+import { buildWeeklyStats } from "./utils/weeklyOverview.js";
 
 export default function WeeklyOverview({
   selectedDate,
   foodItems,
   waterItems,
 }) {
-  const days = createLastSevenDays(selectedDate);
-  const dayStats = days.map((date) => {
-    const key = getDayKey(date);
-    const calories = foodItems
-      .filter((item) => getDayKey(item.createdAt) === key)
-      .reduce((sum, item) => sum + Number(item.calories || 0), 0);
-    const water = waterItems
-      .filter((item) => getDayKey(item.createdAt) === key)
-      .reduce((sum, item) => sum + Number(item.amount || 0), 0);
-
-    return {
-      key,
-      label: date.toLocaleDateString("pl-PL", { weekday: "short" }),
-      calories,
-      water,
-    };
-  });
+  const dayStats = buildWeeklyStats(selectedDate, foodItems, waterItems);
 
   const maxCalories = Math.max(...dayStats.map((day) => day.calories), 1);
   const maxWater = Math.max(...dayStats.map((day) => day.water), 1);
