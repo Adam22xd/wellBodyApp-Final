@@ -6,6 +6,8 @@ export default function DayPicker({
   const openPicker = () => {
     if (!dateInputRef.current) return;
 
+    dateInputRef.current.focus();
+
     if (typeof dateInputRef.current.showPicker === "function") {
       dateInputRef.current.showPicker();
       return;
@@ -32,6 +34,7 @@ export default function DayPicker({
         type="date"
         value={selectedDate}
         onChange={(e) => onChange(e.target.value)}
+        aria-label="Wybierz dzien"
       />
     </div>
   );
