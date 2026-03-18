@@ -14,7 +14,6 @@ import { getDateKey, formatSelectedDate, getTodayDateValue } from "./utils/date.
 import { getApiCandidates, getErrorMessage } from "./utils/api.js";
 import { sanitizeGoalInput } from "./utils/dashboard.js";
 import AppNavbar from "./components/layout/AppNavbar.jsx";
-import DashboardSummary from "./components/dashboard/DashboardSummary.jsx";
 import TrackerSection from "./components/dashboard/TrackerSection.jsx";
 
 const API_CANDIDATES = getApiCandidates();
@@ -469,6 +468,7 @@ export default function App() {
     }
 
     alert("Zalogowano pomyślnie");
+    setActiveSection(null);
     setIsLoginVisible(false);
   };
 
@@ -539,10 +539,19 @@ export default function App() {
         {!isLoginVisible && !isRegisterVisible && !isLoggedIn && (
           <header className="hero">
             <div className="hero-left">
+              <p className="hero-eyebrow">Nutrition journal for real routines</p>
               <h1>Kontroluj dietę i nawodnienie</h1>
               <p>
-                Prosta aplikacja do monitorowania kalorii i ilości wypitej wody.
+                Prosta aplikacja do monitorowania kalorii i ilosci wypitej wody.
+                Bez chaosu, bez przekombinowania, z czytelnym planem na kazdy
+                dzien.
               </p>
+
+              <div className="hero-points" aria-label="Najwazniejsze korzysci">
+                <span>Codzienne cele kalorii i wody</span>
+                <span>Szybkie dodawanie wpisow</span>
+                <span>Jeden widok na caly dzien</span>
+              </div>
 
               {!isLoggedIn && (
                 <div className="hero-buttons">
@@ -582,7 +591,31 @@ export default function App() {
               )}
             </div>
 
-            <div className="hero-right" />
+            <div className="hero-right">
+              <div className="hero-editorial-card">
+                <p className="hero-card-kicker">Today in balance</p>
+                <h2>Mniej tabel, wiecej decyzji, ktore faktycznie sa proste.</h2>
+                <p>
+                  Zobacz cele, wpisy i postep w jednym miejscu zamiast skakac
+                  miedzy notatkami i kalkulatorem.
+                </p>
+
+                <div className="hero-card-metrics">
+                  <div>
+                    <strong>2100</strong>
+                    <span>cel kalorii</span>
+                  </div>
+                  <div>
+                    <strong>2400 ml</strong>
+                    <span>cel wody</span>
+                  </div>
+                  <div>
+                    <strong>1 dashboard</strong>
+                    <span>na caly dzien</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </header>
         )}
 
@@ -604,7 +637,11 @@ export default function App() {
                   setLogin={setEmail}
                   setPassword={setLoginPassword}
                   onLogin={handleLogin}
-                  logout={() => setIsLoginVisible(false)}
+                  onClose={() => setIsLoginVisible(false)}
+                  onSwitchToRegister={() => {
+                    setIsLoginVisible(false);
+                    setIsRegisterVisible(true);
+                  }}
                 />
               )}
 
@@ -614,6 +651,11 @@ export default function App() {
                   setEmail={setEmail}
                   passwordReg={passwordReg}
                   setPasswordReg={setPasswordReg}
+                  onClose={() => setIsRegisterVisible(false)}
+                  onSwitchToLogin={() => {
+                    setIsRegisterVisible(false);
+                    setIsLoginVisible(true);
+                  }}
                   register={handleRegister}
                 />
               )}
@@ -632,30 +674,76 @@ export default function App() {
 
       {isLoggedIn && !needsOnboarding && (
         <>
-          <header className="dashboard-header">
-            <h1 className="dashboard-title">{selectedDateLabel}</h1>
-          </header>
-
           {!activeSection && (
-            <DashboardSummary
-              selectedDate={selectedDate}
-              totalCalories={totalCalories}
-              calorieGoal={calorieGoal}
-              totalWater={totalWater}
-              waterGoal={waterGoal}
-              caloriesProgress={caloriesProgress}
-              waterProgress={waterProgress}
-              onCalorieGoalChange={(e) =>
-                setCalorieGoal(Number(sanitizeGoalInput(e.target.value) || 0))
-              }
-              onWaterGoalChange={(e) =>
-                setWaterGoal(Number(sanitizeGoalInput(e.target.value) || 0))
-              }
-              onCalorieGoalBlur={handleFoodGoalBlur}
-              onWaterGoalBlur={handleWaterGoalBlur}
-              foodItems={foodItems}
-              waterItems={waterItems}
-            />
+            <section className="logged-home">
+              <div className="logged-home-copy">
+                <p className="hero-eyebrow">Daily brief • {selectedDateLabel}</p>
+                <h1 className="dashboard-title logged-home-title">
+                  Zacznij od ustawienia swoich celow na dzisiaj.
+                </h1>
+                <p className="logged-home-text">
+                  Po lewej masz spokojny start, a reszte otwierasz dopiero z
+                  przyciskow w nawigacji. Najpierw kalorie i woda, potem
+                  posilki, napoje i skaner.
+                </p>
+              </div>
+
+              <div className="dashboard-summary goal-prompt-grid">
+                <div className="summary-card goal-prompt-card">
+                  <div className="summary-head">
+                    <div>
+                      <p className="summary-kicker">Dzienny plan</p>
+                      <h2>Cel kalorii</h2>
+                    </div>
+                    <span className="goal-prompt-unit">kcal</span>
+                  </div>
+                  <input
+                    className="summary-goal-input goal-prompt-input"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={calorieGoal}
+                    onChange={(e) =>
+                      setCalorieGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+                    }
+                    onBlur={handleFoodGoalBlur}
+                  />
+                  <p className="summary-value">
+                    Dzisiaj zjedzone: {totalCalories} kcal
+                  </p>
+                  <div className="progressbar summary-progress">
+                    <div style={{ width: `${caloriesProgress}%` }} />
+                  </div>
+                </div>
+
+                <div className="summary-card goal-prompt-card">
+                  <div className="summary-head">
+                    <div>
+                      <p className="summary-kicker">Dzienny plan</p>
+                      <h2>Cel wody</h2>
+                    </div>
+                    <span className="goal-prompt-unit">ml</span>
+                  </div>
+                  <input
+                    className="summary-goal-input goal-prompt-input"
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={waterGoal}
+                    onChange={(e) =>
+                      setWaterGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+                    }
+                    onBlur={handleWaterGoalBlur}
+                  />
+                  <p className="summary-value">
+                    Dzisiaj wypite: {totalWater} ml
+                  </p>
+                  <div className="progressbar summary-progress water">
+                    <div style={{ width: `${waterProgress}%` }} />
+                  </div>
+                </div>
+              </div>
+            </section>
           )}
 
           {activeSection && (

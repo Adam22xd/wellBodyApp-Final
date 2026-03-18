@@ -5,6 +5,8 @@ interface RegisterFormProps {
   setEmail: (email: string) => void;
   passwordReg: string;
   setPasswordReg: (password: string) => void;
+  onClose: () => void;
+  onSwitchToLogin: () => void;
   register: (
     email: string,
     password: string,
@@ -19,6 +21,8 @@ export default function RegisterForm({
   setEmail,
   passwordReg,
   setPasswordReg,
+  onClose,
+  onSwitchToLogin,
   register,
 }: RegisterFormProps) {
   const [passwordError, setPasswordError] = useState<string>("");
@@ -27,22 +31,22 @@ export default function RegisterForm({
     e.preventDefault();
 
     if (!email) {
-      setPasswordError("Email nie może być pusty");
+      setPasswordError("Email nie moze byc pusty");
       return;
     }
 
     if (!email.includes("@")) {
-      setPasswordError("Podaj poprawny email (np. konto@konto.pl)");
+      setPasswordError("Podaj poprawny email, np. konto@konto.pl");
       return;
     }
 
     if (!passwordReg) {
-      setPasswordError("Hasło nie może być puste");
+      setPasswordError("Haslo nie moze byc puste");
       return;
     }
 
     if (passwordReg.length < 6) {
-      setPasswordError("Hasło musi mieć co najmniej 6 znaków");
+      setPasswordError("Haslo musi miec co najmniej 6 znakow");
       return;
     }
 
@@ -53,44 +57,94 @@ export default function RegisterForm({
 
       if (!result?.ok) {
         const errorMap: Record<string, string> = {
-          "auth/email-already-in-use": "Ten email jest już zarejestrowany",
-          "auth/invalid-email": "Nieprawidłowy adres email",
-          "auth/weak-password": "Hasło jest za słabe (min. 6 znaków)",
+          "auth/email-already-in-use": "Ten email jest juz zarejestrowany",
+          "auth/invalid-email": "Nieprawidlowy adres email",
+          "auth/weak-password": "Haslo jest za slabe, minimum 6 znakow",
         };
 
-        setPasswordError(errorMap[result?.code ?? ""] || "Błąd rejestracji");
+        setPasswordError(errorMap[result?.code ?? ""] || "Blad rejestracji");
       }
     } catch {
-      setPasswordError("Wystąpił nieoczekiwany błąd");
+      setPasswordError("Wystapil nieoczekiwany blad");
     }
   };
 
   return (
-    <form className="containerRegistration" onSubmit={handleSubmit} noValidate>
-      <div className="registrationbox">
-        <p className="reg-text">Zarejestruj się</p>
+    <form
+      className="registrationbox auth-card auth-card-register"
+      onSubmit={handleSubmit}
+      noValidate
+    >
+      <button
+        type="button"
+        className="auth-close"
+        onClick={onClose}
+        aria-label="Zamknij panel rejestracji"
+      >
+        x
+      </button>
 
-        <input
-          className="reg-input-email"
-          placeholder="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+      <div className="auth-kicker">Nowe konto</div>
+      <p className="reg-text">Dolacz do WellBody</p>
+      <p className="form-subtitle">
+        Ustaw konto i zacznij monitorowac jedzenie oraz nawodnienie.
+      </p>
 
-        <input
-          className="reg-input-pass"
-          placeholder="password"
-          type="password"
-          value={passwordReg}
-          onChange={(e) => setPasswordReg(e.target.value)}
-          required
-        />
+      <div className="auth-switch" aria-label="Przelacznik formularza">
+        <button
+          type="button"
+          className="auth-switch-tab"
+          onClick={onSwitchToLogin}
+        >
+          Logowanie
+        </button>
+        <button type="button" className="auth-switch-tab auth-switch-tab-active">
+          Rejestracja
+        </button>
+      </div>
 
-        {passwordError && <p style={{ color: "red" }}>{passwordError}</p>}
+      <div className="auth-badges">
+        <span>1 konto</span>
+        <span>Dzienne cele</span>
+        <span>Lepsze nawyki</span>
+      </div>
 
-        <button type="submit">Zarejestruj się</button>
+      <label className="auth-label" htmlFor="register-email">
+        Email
+      </label>
+      <input
+        id="register-email"
+        className="reg-input-email"
+        placeholder="konto@wellbody.pl"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+
+      <label className="auth-label" htmlFor="register-password">
+        Haslo
+      </label>
+      <input
+        id="register-password"
+        className="reg-input-pass"
+        placeholder="Minimum 6 znakow"
+        type="password"
+        value={passwordReg}
+        onChange={(e) => setPasswordReg(e.target.value)}
+        required
+      />
+
+      {passwordError && <p style={{ color: "red" }}>{passwordError}</p>}
+
+      <button type="submit" className="auth-submit">
+        Utworz konto
+      </button>
+
+      <div className="auth-footer">
+        <button type="button" className="forgotpassword" onClick={onSwitchToLogin}>
+          Masz juz konto? Zaloguj sie
+        </button>
       </div>
     </form>
   );

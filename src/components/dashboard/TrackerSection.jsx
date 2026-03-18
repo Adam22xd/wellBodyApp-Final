@@ -41,15 +41,30 @@ export default function TrackerSection({
 
   return (
     <div className="dashboard-card dashboard-card-single">
-      <h2>{title}</h2>
-      <div className="card-icon">
-        <i className={`fa-solid ${iconClass}`} />
+      <div className="tracker-header">
+        <div>
+          <p className="summary-kicker">Twoja lista dnia</p>
+          <h2>{title}</h2>
+        </div>
+        <div className="card-icon">
+          <i className={`fa-solid ${iconClass}`} />
+        </div>
       </div>
 
-      <p>{items.length ? `${items.length} ${countLabel}` : emptyText}</p>
+      <p className="tracker-copy">
+        {items.length
+          ? `Masz zapisane ${items.length} ${countLabel}.`
+          : `Na razie ${emptyText.toLowerCase()}.`}
+      </p>
 
       {items.length > 0 && (
-        <div className={isFood ? "food-list" : "water-list"}>
+        <section className="tracker-list-shell">
+          <div className="tracker-list-head">
+            <p className="summary-kicker">Dodane wpisy</p>
+            <span className="tracker-count">{items.length}</span>
+          </div>
+
+          <div className={isFood ? "food-list tracker-list" : "water-list tracker-list"}>
           {items.map((item) => {
             const timeLabel = getTimeFrameLabel(item.createdAt);
             const addedAt = formatAddedTime(item.createdAt);
@@ -57,11 +72,23 @@ export default function TrackerSection({
             return (
               <div key={item.id} className={isFood ? "food-item" : "water-item"}>
                 <div className="entry-main">
-                  <strong>{item.name}</strong>
-                  <span>{isFood ? `${item.weight} g` : `${item.amount} ml`}</span>
-                  {isFood ? <span>{item.calories} kcal</span> : null}
-                  <span className="time-frame-badge">{timeLabel}</span>
-                  <span className="time-added">Dodano: {addedAt}</span>
+                  <div className="entry-title-row">
+                    <strong>{item.name}</strong>
+                    <span className="time-frame-badge">{timeLabel}</span>
+                  </div>
+
+                  <div className="entry-meta-row">
+                    <span className="entry-stat">
+                      {isFood ? `${item.weight} g` : `${item.amount} ml`}
+                    </span>
+                    {isFood ? (
+                      <span className="entry-stat entry-stat-accent">
+                        {item.calories} kcal
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <span className="time-added">Dodano o {addedAt}</span>
                 </div>
                 <div className="entry-actions">
                   <button
@@ -82,6 +109,18 @@ export default function TrackerSection({
               </div>
             );
           })}
+          </div>
+        </section>
+      )}
+
+      {items.length === 0 && (
+        <div className="tracker-empty">
+          <p className="summary-kicker">Pusto na starcie</p>
+          <h3>Dodaj pierwszy wpis z tego panelu.</h3>
+          <p>
+            Zacznij od jednego produktu albo jednego napoju. Reszta listy ulozy
+            sie automatycznie ponizej.
+          </p>
         </div>
       )}
 
