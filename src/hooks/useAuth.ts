@@ -3,6 +3,7 @@ import {
   type User,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
@@ -12,6 +13,12 @@ import { auth } from "./firebase";
 type RegisterResult = {
   ok: boolean;
   code?: string;
+};
+
+type LoginResult = {
+  ok: boolean;
+  code?: string;
+  reason?: "email-not-verified";
 };
 
 export default function useAuth() {
@@ -37,23 +44,43 @@ export default function useAuth() {
     password: string,
   ): Promise<RegisterResult> => {
     try {
-      await createUserWithEmailAndPassword(auth, userEmail, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        userEmail,
+        password,
+      );
+
+      await sendEmailVerification(userCredential.user);
       await signOut(auth);
+
       return { ok: true };
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
+      console.log("Firebase registration error:", firebaseError.code);
       return { ok: false, code: firebaseError.code };
     }
   };
 
-  const loginUser = async (): Promise<boolean> => {
+  const loginUser = async (): Promise<LoginResult> => {
     try {
-      await signInWithEmailAndPassword(auth, email, loginPassword);
-      return true;
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        loginPassword,
+      );
+
+      await userCredential.user.reload();
+
+      if (!userCredential.user.emailVerified) {
+        await signOut(auth);
+        return { ok: false, reason: "email-not-verified" };
+      }
+
+      return { ok: true };
     } catch (err: unknown) {
       const firebaseError = err as FirebaseError;
       console.log("Firebase login error:", firebaseError.code);
-      return false;
+      return { ok: false, code: firebaseError.code };
     }
   };
 

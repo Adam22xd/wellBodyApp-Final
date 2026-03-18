@@ -1,9 +1,10 @@
-import "./index.css";
+﻿import "./index.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import BarcodeScanner from "./BarcodeScanner";
+import CompleteProfileForm from "./CompleteProfileForm";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
 import useProgress from "./hooks/useProgress.ts";
@@ -48,6 +49,8 @@ export default function App() {
   const [detectedProduct, setDetectedProduct] = useState(null);
   const [manualEntry, setManualEntry] = useState(false);
   const dateInputRef = useRef(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
 
   const {
     email,
@@ -152,6 +155,7 @@ export default function App() {
     if (!currentUser) {
       setFoodItems([]);
       setWaterItems([]);
+      setNeedsOnboarding(false);
       return;
     }
 
@@ -173,6 +177,11 @@ export default function App() {
 
     setCalorieGoal(Number(meData?.user?.calorieGoal || 0));
     setWaterGoal(Number(meData?.user?.waterGoal || 0));
+
+    setNeedsOnboarding(
+      Number(meData?.user?.calorieGoal || 0) === 0 &&
+        Number(meData?.user?.waterGoal || 0) === 0,
+    );
     setFoodItems(Array.isArray(foodData) ? foodData : []);
     setWaterItems(Array.isArray(waterData) ? waterData : []);
   }, [authFetch, currentUser]);
@@ -419,6 +428,7 @@ export default function App() {
     if (!isLoggedIn || !currentUser) {
       setFoodItems([]);
       setWaterItems([]);
+      setNeedsOnboarding(false);
       return undefined;
     }
 
@@ -440,29 +450,46 @@ export default function App() {
   }, [authReady, currentUser, isLoggedIn, loadDashboardData]);
 
   const handleLogin = async () => {
-    const success = await loginUser();
+    const result = await loginUser();
 
-    if (success) {
-      try {
-        await loadDashboardData();
-      } catch (error) {
-        console.error("Błąd odświeżania danych po logowaniu:", error);
+    if (!result.ok) {
+      if (result.reason === "email-not-verified") {
+        alert("Najpierw potwierdź adres e-mail klikając link w wiadomości od Firebase.");
+        return;
       }
 
-      alert("Zalogowano pomyślnie");
-      setIsLoginVisible(false);
+      alert("Nie udało się zalogować. Sprawdź email i hasło.");
+      return;
     }
+
+    try {
+      await loadDashboardData();
+    } catch (error) {
+      console.error("Błąd odświeżania danych po logowaniu:", error);
+    }
+
+    alert("Zalogowano pomyślnie");
+    setIsLoginVisible(false);
   };
 
   const handleRegister = async (nextEmail, password) => {
     const result = await register(nextEmail, password);
 
     if (result?.ok) {
-      alert("Zarejestrowano pomyślnie");
+      alert("Konto utworzone pomyślnie. Sprawdź swoją skrzynkę e-mail, aby zweryfikować konto przed logowaniem.");
       setIsRegisterVisible(false);
+      setIsLoginVisible(true);
     }
 
     return result;
+  };
+
+  const handleCompleteProfile = async (nextCalorieGoal, nextWaterGoal) => {
+    await saveGoals(nextCalorieGoal, nextWaterGoal);
+    setCalorieGoal(nextCalorieGoal);
+    setWaterGoal(nextWaterGoal);
+    setNeedsOnboarding(false);
+    alert("Profil został uzupełniony.");
   };
 
   const visibleFoodItems = foodItems.filter(
@@ -595,7 +622,15 @@ export default function App() {
         )}
       </div>
 
-      {isLoggedIn && (
+      {isLoggedIn && needsOnboarding && (
+        <CompleteProfileForm
+          initialCalorieGoal={calorieGoal}
+          initialWaterGoal={waterGoal}
+          onSubmit={handleCompleteProfile}
+        />
+      )}
+
+      {isLoggedIn && !needsOnboarding && (
         <>
           <header className="dashboard-header">
             <h1 className="dashboard-title">{selectedDateLabel}</h1>
