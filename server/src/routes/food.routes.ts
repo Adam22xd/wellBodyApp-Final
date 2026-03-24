@@ -13,6 +13,49 @@ const foodSchema = z.object({
 
 router.use(requireAuth);
 
+// CACHE: GET /api/food/cache/:barcode - pobiera zbuforowane dane produktu po kodzie.
+router.get("/cache/:barcode", async (req, res) => {
+  const barcode = String(req.params.barcode || "").trim();
+  if (!barcode) {
+    return res.status(400).json({ message: "Nieprawidłowy barcode" });
+  }
+
+  const cached = await prisma.cachedProduct.findUnique({
+    where: { barcode },
+  });
+
+  if (!cached) {
+    return res.status(404).json({ message: "Produkt nie znaleziony w cache" });
+  }
+
+  return res.json(cached);
+});
+
+// CACHE: POST /api/food/cache - zapisuje/aktualizuje produkt w cache.
+router.post("/cache", async (req, res) => {
+  const cacheSchema = z.object({
+    barcode: z.string().trim().min(1),
+    name: z.string().trim().min(1),
+    calories: z.number().int().nonnegative(),
+    verified: z.boolean().optional(),
+  });
+
+  const parsed = cacheSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Nieprawidłowy payload" });
+  }
+
+  const { barcode, name, calories, verified = false } = parsed.data;
+
+  const cached = await prisma.cachedProduct.upsert({
+    where: { barcode },
+    update: { name, calories, verified },
+    create: { barcode, name, calories, verified },
+  });
+
+  return res.status(201).json(cached);
+});
+
 // GET /api/food - Pobiera listę wszystkich wpisów jedzenia użytkownika.
 // Co wysyła: tablica wpisów jedzenia (nazwa, waga, kalorie, data).
 // Co pobiera: firebaseUid z tokenu (middleware).
