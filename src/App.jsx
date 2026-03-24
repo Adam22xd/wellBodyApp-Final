@@ -352,6 +352,13 @@ export default function App() {
           throw new Error(message);
         }
 
+        const localNextFood = {
+          ...localBarcodeCache,
+          [barcode]: { name: safeName, calories: safeCalories },
+        };
+        setLocalBarcodeCache(localNextFood);
+        window.localStorage.setItem("barcode-cache", JSON.stringify(localNextFood));
+
         if (isLoggedIn && currentUser && barcode) {
           authFetch(`/food/cache`, {
             method: "POST",
@@ -411,6 +418,13 @@ export default function App() {
           });
           throw new Error(message);
         }
+
+        const localNextWater = {
+          ...localBarcodeCache,
+          [barcode]: { name: safeName, calories: 0 },
+        };
+        setLocalBarcodeCache(localNextWater);
+        window.localStorage.setItem("barcode-cache", JSON.stringify(localNextWater));
 
         if (isLoggedIn && currentUser && barcode) {
           authFetch(`/food/cache`, {
