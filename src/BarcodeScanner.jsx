@@ -52,10 +52,7 @@ export default function BarcodeScanner({ onDetected, onClose }) {
             if (result && !scanned) {
               const text = result.getText().trim();
 
-              if (text && /^\d{8,14}$/.test(text)) {
-                setScanned(true);
-                setScanHint("Kod wykryty! Przygotowuję produkt...");
-
+              if (text && /^\d{6,14}$/.test(text)) {
                 if (hintInterval) {
                   clearInterval(hintInterval);
                   hintInterval = null;
