@@ -8,6 +8,8 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   const [scanHint, setScanHint] = useState(
     "Ustaw kod w ramce i trzymaj stabilnie.",
   );
+  const [torchSupported, setTorchSupported] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
   const controlsRef = useRef(null);
 
   useEffect(() => {
@@ -39,6 +41,9 @@ export default function BarcodeScanner({ onDetected, onClose }) {
           {
             audio: false,
             video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { ideal: 30 },
               facingMode: { ideal: "environment" },
             },
           },
@@ -76,6 +81,15 @@ export default function BarcodeScanner({ onDetected, onClose }) {
         }
 
         controlsRef.current = controls;
+
+        const track = videoRef.current?.srcObject?.getVideoTracks?.()[0];
+        if (track?.getCapabilities) {
+          const capabilities = track.getCapabilities();
+          if (capabilities.torch) {
+            setTorchSupported(true);
+          }
+        }
+
         setError("");
       } catch (scanError) {
         if (hintInterval) {
@@ -113,6 +127,21 @@ export default function BarcodeScanner({ onDetected, onClose }) {
     onClose();
   };
 
+  const toggleTorch = async () => {
+    const track = videoRef.current?.srcObject?.getVideoTracks?.()[0];
+    if (!track || !track.applyConstraints) {
+      return;
+    }
+
+    try {
+      await track.applyConstraints({ advanced: [{ torch: !torchOn }] });
+      setTorchOn((prev) => !prev);
+    } catch (err) {
+      console.warn("Torch not available", err);
+      setError("Latarka niedostępna na tym urządzeniu.");
+    }
+  };
+
   return (
     <div className="scanner-modal">
       <div className="scanner-shell">
@@ -124,6 +153,16 @@ export default function BarcodeScanner({ onDetected, onClose }) {
           <p className="scanner-kicker">Skaner kodu</p>
           <h2>Zeskanuj produkt</h2>
           <span>{scanHint}</span>
+          {torchSupported && (
+            <button
+              type="button"
+              className="scanner-torch"
+              onClick={toggleTorch}
+              style={{ marginTop: "10px" }}
+            >
+              {torchOn ? "Wyłącz latarkę" : "Włącz latarkę"}
+            </button>
+          )}
         </div>
 
         <div className="scanner-stage">

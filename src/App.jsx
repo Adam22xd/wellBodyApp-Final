@@ -52,6 +52,14 @@ export default function App() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [detectedProduct, setDetectedProduct] = useState(null);
   const [manualEntry, setManualEntry] = useState(false);
+  const [localBarcodeCache, setLocalBarcodeCache] = useState(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      return JSON.parse(window.localStorage.getItem("barcode-cache") || "{}");
+    } catch {
+      return {};
+    }
+  });
   // ⏳ Loading state dla spinnera podczas szukania produktu
   const [isSearchingProduct, setIsSearchingProduct] = useState(false);
   const dateInputRef = useRef(null);
@@ -569,6 +577,19 @@ export default function App() {
         return;
       }
 
+      // 🔎 Najpierw sprawdź lokalny cache po stronie aplikacji
+      const localCached = localBarcodeCache[barcode];
+      if (localCached) {
+        console.log("✅ Produkt z lokalnego cache:", barcode, localCached);
+        setDetectedProduct({
+          name: localCached.name,
+          calories: localCached.calories,
+          barcode,
+          fromCache: true,
+        });
+        return;
+      }
+
       try {
         // Włącz spinner - pokazuje "Szukam produktu..."
         setIsSearchingProduct(true);
@@ -588,6 +609,17 @@ export default function App() {
                 barcode: cached.barcode,
                 fromCache: true,
               });
+
+              const localNext = {
+                ...localBarcodeCache,
+                [barcode]: { name: cached.name, calories: cached.calories },
+              };
+              setLocalBarcodeCache(localNext);
+              window.localStorage.setItem(
+                "barcode-cache",
+                JSON.stringify(localNext),
+              );
+
               setIsSearchingProduct(false);
               return;
             }
@@ -643,7 +675,17 @@ export default function App() {
               fromCache: false,
             });
 
-            // 💾 Automatycznie cache'uj znaleziony produkt
+            const localNext = {
+              ...localBarcodeCache,
+              [barcode]: { name: productName, calories: productCalories },
+            };
+            setLocalBarcodeCache(localNext);
+            window.localStorage.setItem(
+              "barcode-cache",
+              JSON.stringify(localNext),
+            );
+
+            // 💾 Automatycznie cache'uj znaleziony produkt w API
             if (isLoggedIn && currentUser) {
               authFetch(`/food/cache`, {
                 method: "POST",
@@ -678,7 +720,7 @@ export default function App() {
         setIsSearchingProduct(false);
       }
     },
-    [authFetch, isLoggedIn, currentUser],
+    [authFetch, isLoggedIn, currentUser, localBarcodeCache],
   );
 
   useEffect(() => {
