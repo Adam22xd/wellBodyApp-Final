@@ -5,13 +5,35 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   const videoRef = useRef(null);
   const [scanned, setScanned] = useState(false);
   const [error, setError] = useState("");
+  const [scanHint, setScanHint] = useState(
+    "Ustaw kod w ramce i trzymaj stabilnie.",
+  );
   const controlsRef = useRef(null);
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
     let isMounted = true;
+    let hintInterval = null;
 
     async function startScanner() {
+      setScanHint("Ustaw kod w ramce i trzymaj stabilnie.");
+      let detectStartTime = Date.now();
+
+      hintInterval = setInterval(() => {
+        if (scanned) {
+          return;
+        }
+        const elapsed = (Date.now() - detectStartTime) / 1000;
+
+        if (elapsed < 4) {
+          setScanHint("Trzymaj kod w ramce.");
+        } else if (elapsed < 8) {
+          setScanHint("Przesuń kod trochę bliżej kamery.");
+        } else {
+          setScanHint("Spróbuj delikatnie oddalić kod i znowu skanuj.");
+        }
+      }, 1000);
+
       try {
         const controls = await codeReader.decodeFromConstraints(
           {
@@ -27,6 +49,12 @@ export default function BarcodeScanner({ onDetected, onClose }) {
 
               if (text && /^\d{8,14}$/.test(text)) {
                 setScanned(true);
+                setScanHint("Kod wykryty! Przygotowuję produkt...");
+
+                if (hintInterval) {
+                  clearInterval(hintInterval);
+                  hintInterval = null;
+                }
 
                 if (controlsRef.current) {
                   controlsRef.current.stop();
@@ -40,13 +68,22 @@ export default function BarcodeScanner({ onDetected, onClose }) {
 
         if (!isMounted) {
           controls.stop();
+          if (hintInterval) {
+            clearInterval(hintInterval);
+            hintInterval = null;
+          }
           return;
         }
 
         controlsRef.current = controls;
         setError("");
       } catch (scanError) {
+        if (hintInterval) {
+          clearInterval(hintInterval);
+          hintInterval = null;
+        }
         console.error("Scanner start failed:", scanError);
+
         if (isMounted) {
           setError(
             "Nie udało się uruchomić kamery. Sprawdź uprawnienia aparatu i spróbuj ponownie.",
@@ -59,11 +96,14 @@ export default function BarcodeScanner({ onDetected, onClose }) {
 
     return () => {
       isMounted = false;
+      if (hintInterval) {
+        clearInterval(hintInterval);
+      }
       if (controlsRef.current) {
         controlsRef.current.stop();
       }
     };
-  }, [onDetected, scanned]);
+  }, [onDetected]);
 
   const handleClose = () => {
     if (controlsRef.current) {
@@ -76,18 +116,14 @@ export default function BarcodeScanner({ onDetected, onClose }) {
   return (
     <div className="scanner-modal">
       <div className="scanner-shell">
-        <button
-          type="button"
-          className="scanner-close"
-          onClick={handleClose}
-        >
+        <button type="button" className="scanner-close" onClick={handleClose}>
           Zamknij
         </button>
 
         <div className="scanner-copy">
           <p className="scanner-kicker">Skaner kodu</p>
           <h2>Zeskanuj produkt</h2>
-          <span>Ustaw kod kreskowy w ramce i przytrzymaj telefon stabilnie.</span>
+          <span>{scanHint}</span>
         </div>
 
         <div className="scanner-stage">

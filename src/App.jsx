@@ -10,13 +10,18 @@ import RegisterForm from "./RegisterForm";
 import useProgress from "./hooks/useProgress.ts";
 import { auth } from "./hooks/firebase";
 import { useAuthContext } from "./context/AuthContext.jsx";
-import { getDateKey, formatSelectedDate, getTodayDateValue } from "./utils/date.js";
+import {
+  getDateKey,
+  formatSelectedDate,
+  getTodayDateValue,
+} from "./utils/date.js";
 import { getApiCandidates, getErrorMessage } from "./utils/api.js";
 import { sanitizeGoalInput } from "./utils/dashboard.js";
 import AppNavbar from "./components/layout/AppNavbar.jsx";
 import TrackerSection from "./components/dashboard/TrackerSection.jsx";
 
 const API_CANDIDATES = getApiCandidates();
+const LAST_WORKING_API_KEY = "wellbody:last-working-api";
 
 const EMPTY_FOOD_FORM = {
   name: "",
@@ -47,9 +52,15 @@ export default function App() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [detectedProduct, setDetectedProduct] = useState(null);
   const [manualEntry, setManualEntry] = useState(false);
+  // ⏳ Loading state dla spinnera podczas szukania produktu
+  const [isSearchingProduct, setIsSearchingProduct] = useState(false);
   const dateInputRef = useRef(null);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
-
+  const apiBaseRef = useRef(
+    typeof window !== "undefined"
+      ? window.localStorage.getItem(LAST_WORKING_API_KEY)
+      : null,
+  );
 
   const {
     email,
@@ -92,43 +103,63 @@ export default function App() {
     return user.getIdToken();
   }, []);
 
-  const authFetch = useCallback(async (path, options = {}) => {
-    let token;
+  const authFetch = useCallback(
+    async (path, options = {}) => {
+      let token;
 
-    try {
-      token = await getFirebaseToken();
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Nie udało się pobrać tokenu użytkownika";
-      throw new Error(message);
-    }
-
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...(options.headers || {}),
-    };
-
-    let lastError;
-
-    for (const apiBase of API_CANDIDATES) {
       try {
-        return await fetch(`${apiBase}${path}`, {
-          ...options,
-          headers,
-        });
+        token = await getFirebaseToken();
       } catch (error) {
-        lastError = error;
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Nie udało się pobrać tokenu użytkownika";
+        throw new Error(message);
       }
-    }
 
-    throw new Error(
-      `Brak połączenia z API. Sprawdzone adresy: ${API_CANDIDATES.join(", ")}.`,
-      { cause: lastError },
-    );
-  }, [getFirebaseToken]);
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.headers || {}),
+      };
+
+      const prioritizedCandidates = [
+        ...(import.meta.env.DEV ? ["http://localhost:4001/api"] : []),
+        ...(apiBaseRef.current && apiBaseRef.current.includes("4001")
+          ? [apiBaseRef.current]
+          : []),
+        ...API_CANDIDATES,
+      ].filter(Boolean);
+      const uniqueCandidates = [...new Set(prioritizedCandidates)];
+      let lastError;
+
+      for (const apiBase of uniqueCandidates) {
+        try {
+          const response = await fetch(`${apiBase}${path}`, {
+            ...options,
+            headers,
+          });
+
+          apiBaseRef.current = apiBase;
+          if (typeof window !== "undefined") {
+            window.localStorage.setItem(LAST_WORKING_API_KEY, apiBase);
+          }
+
+          console.log("[authFetch] API base:", apiBase, "path:", path);
+
+          return response;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      throw new Error(
+        `Brak połączenia z API. Sprawdzone adresy: ${API_CANDIDATES.join(", ")}.`,
+        { cause: lastError },
+      );
+    },
+    [getFirebaseToken],
+  );
 
   const loadFoodItems = useCallback(async () => {
     const response = await authFetch("/food");
@@ -185,23 +216,26 @@ export default function App() {
     setWaterItems(Array.isArray(waterData) ? waterData : []);
   }, [authFetch, currentUser]);
 
-  const saveGoals = useCallback(async (nextCalorieGoal, nextWaterGoal) => {
-    const response = await authFetch("/auth/goals", {
-      method: "PUT",
-      body: JSON.stringify({
-        calorieGoal: nextCalorieGoal,
-        waterGoal: nextWaterGoal,
-      }),
-    });
+  const saveGoals = useCallback(
+    async (nextCalorieGoal, nextWaterGoal) => {
+      const response = await authFetch("/auth/goals", {
+        method: "PUT",
+        body: JSON.stringify({
+          calorieGoal: nextCalorieGoal,
+          waterGoal: nextWaterGoal,
+        }),
+      });
 
-    if (!response.ok) {
-      const message = await getErrorMessage(
-        response,
-        "Nie udalo sie zapisac celow",
-      );
-      throw new Error(message);
-    }
-  }, [authFetch]);
+      if (!response.ok) {
+        const message = await getErrorMessage(
+          response,
+          "Nie udalo sie zapisac celow",
+        );
+        throw new Error(message);
+      }
+    },
+    [authFetch],
+  );
 
   const closePanel = useCallback(() => {
     setActivePanel(null);
@@ -211,10 +245,13 @@ export default function App() {
     setNewWater(EMPTY_WATER_FORM);
   }, []);
 
-  const openSection = useCallback((sectionName) => {
-    closePanel();
-    setActiveSection((prev) => (prev === sectionName ? null : sectionName));
-  }, [closePanel]);
+  const openSection = useCallback(
+    (sectionName) => {
+      closePanel();
+      setActiveSection((prev) => (prev === sectionName ? null : sectionName));
+    },
+    [closePanel],
+  );
 
   const toggleFoodPanel = useCallback(() => {
     setEditingFoodId(null);
@@ -278,6 +315,116 @@ export default function App() {
     }
   }, [authFetch, closePanel, editingFoodId, loadFoodItems, newFood]);
 
+  const addScannedFood = useCallback(
+    async ({ name, weight, calories, barcode }) => {
+      const safeName = String(name || "").trim();
+      const safeWeight = Number(weight || 100);
+      const safeCalories = Number(calories || 0);
+
+      if (!safeName || safeWeight <= 0 || safeCalories <= 0) {
+        alert("Nieprawidłowe dane produktu do posiłku.");
+        return;
+      }
+
+      try {
+        const response = await authFetch("/food", {
+          method: "POST",
+          body: JSON.stringify({
+            name: safeName,
+            weight: safeWeight,
+            calories: safeCalories,
+          }),
+        });
+
+        if (!response.ok) {
+          const message = await getErrorMessage(
+            response,
+            "Nie udało się dodać zeskanowanego produktu jako posiłek",
+          );
+          throw new Error(message);
+        }
+
+        if (isLoggedIn && currentUser && barcode) {
+          authFetch(`/food/cache`, {
+            method: "POST",
+            body: JSON.stringify({
+              barcode,
+              name: safeName,
+              calories: safeCalories,
+            }),
+          }).catch((err) => console.error("Cache save error:", err));
+        }
+
+        await loadFoodItems();
+        setDetectedProduct(null);
+        setActivePanel(null);
+      } catch (error) {
+        console.error("Błąd dodawania zeskanowanego posiłku:", error);
+        alert(
+          error?.message ||
+            "Nie udało się dodać zeskanowanego produktu jako posiłek.",
+        );
+      }
+    },
+    [authFetch, currentUser, isLoggedIn, loadFoodItems],
+  );
+
+  const addScannedWater = useCallback(
+    async ({ name, amount, barcode }) => {
+      const safeName = String(name || "").trim();
+      const safeAmount = Math.floor(Number(amount || 250));
+
+      if (!safeName || safeAmount <= 0) {
+        alert("Nieprawidłowe dane produktu do napoju.");
+        return;
+      }
+
+      try {
+        console.debug("addScannedWater: payload", {
+          name: safeName,
+          amount: safeAmount,
+          barcode,
+        });
+
+        const response = await authFetch("/water", {
+          method: "POST",
+          body: JSON.stringify({ name: safeName, amount: safeAmount }),
+        });
+
+        if (!response.ok) {
+          const message = await getErrorMessage(
+            response,
+            "Nie udało się dodać zeskanowanego produktu jako napój",
+          );
+          console.error("addScannedWater non-OK response", {
+            status: response.status,
+            statusText: response.statusText,
+            message,
+          });
+          throw new Error(message);
+        }
+
+        if (isLoggedIn && currentUser && barcode) {
+          authFetch(`/food/cache`, {
+            method: "POST",
+            body: JSON.stringify({ barcode, name: safeName, calories: 0 }),
+          }).catch((err) => console.error("Cache save error:", err));
+        }
+
+        await loadWaterItems();
+        setDetectedProduct(null);
+        setActivePanel(null);
+      } catch (error) {
+        console.error("Błąd dodawania zeskanowanego napoju:", error);
+        alert(
+          error?.message ||
+            "Nie udało się dodać zeskanowanego produktu jako napój.",
+        );
+      }
+    },
+    [authFetch, currentUser, isLoggedIn, loadWaterItems],
+  );
+
   const addWater = useCallback(async () => {
     const name = newWater.name.trim();
     const amount = Number(newWater.amount);
@@ -311,43 +458,49 @@ export default function App() {
     }
   }, [authFetch, closePanel, editingWaterId, loadWaterItems, newWater]);
 
-  const deleteFood = useCallback(async (id) => {
-    try {
-      const response = await authFetch(`/food/${id}`, { method: "DELETE" });
+  const deleteFood = useCallback(
+    async (id) => {
+      try {
+        const response = await authFetch(`/food/${id}`, { method: "DELETE" });
 
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          "Nie udalo sie usunac posilku",
-        );
-        throw new Error(message);
+        if (!response.ok) {
+          const message = await getErrorMessage(
+            response,
+            "Nie udalo sie usunac posilku",
+          );
+          throw new Error(message);
+        }
+
+        await loadFoodItems();
+      } catch (error) {
+        console.error("Blad usuwania posilku:", error);
+        alert(error?.message || "Nie udalo sie usunac posilku.");
       }
+    },
+    [authFetch, loadFoodItems],
+  );
 
-      await loadFoodItems();
-    } catch (error) {
-      console.error("Blad usuwania posilku:", error);
-      alert(error?.message || "Nie udalo sie usunac posilku.");
-    }
-  }, [authFetch, loadFoodItems]);
+  const deleteWater = useCallback(
+    async (id) => {
+      try {
+        const response = await authFetch(`/water/${id}`, { method: "DELETE" });
 
-  const deleteWater = useCallback(async (id) => {
-    try {
-      const response = await authFetch(`/water/${id}`, { method: "DELETE" });
+        if (!response.ok) {
+          const message = await getErrorMessage(
+            response,
+            "Nie udalo sie usunac napoju",
+          );
+          throw new Error(message);
+        }
 
-      if (!response.ok) {
-        const message = await getErrorMessage(
-          response,
-          "Nie udalo sie usunac napoju",
-        );
-        throw new Error(message);
+        await loadWaterItems();
+      } catch (error) {
+        console.error("Blad usuwania napoju:", error);
+        alert(error?.message || "Nie udalo sie usunac napoju.");
       }
-
-      await loadWaterItems();
-    } catch (error) {
-      console.error("Blad usuwania napoju:", error);
-      alert(error?.message || "Nie udalo sie usunac napoju.");
-    }
-  }, [authFetch, loadWaterItems]);
+    },
+    [authFetch, loadWaterItems],
+  );
 
   const handleFoodGoalBlur = useCallback(async () => {
     try {
@@ -386,36 +539,147 @@ export default function App() {
     setActivePanel("water");
   }, []);
 
-  const fetchProductByBarcode = useCallback(async (barcode) => {
-    if (!barcode || barcode.length < 8) {
-      return;
-    }
+  const BARCODE_FALLBACKS = {
+    5449000000996: { name: "Coca-Cola", calories: 42 },
+    5000159484695: { name: "Red Bull Energy Drink", calories: 45 },
+    5411188119576: { name: "Monster Energy", calories: 45 },
+  };
 
-    try {
-      const response = await fetch(
-        `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Błąd odpowiedzi serwera");
+  const fetchProductByBarcode = useCallback(
+    async (barcode) => {
+      // sprawdzenie długości barcodu
+      if (!barcode) {
+        return;
       }
 
-      const data = await response.json();
+      barcode = String(barcode).trim();
+      if (barcode.length < 8) {
+        return;
+      }
 
-      if (data.status === 1) {
-        const product = data.product;
-
+      const fallback = BARCODE_FALLBACKS[barcode];
+      if (fallback) {
+        console.log("🍶 fallback product:", barcode, fallback);
         setDetectedProduct({
-          name: product.product_name || "Nieznany produkt",
-          calories: product.nutriments?.["energy-kcal_100g"] || 0,
+          name: fallback.name,
+          calories: fallback.calories,
+          barcode,
+          fromCache: false,
         });
-      } else {
-        setManualEntry(true);
+        return;
       }
-    } catch (error) {
-      console.error("Błąd FETCH:", error);
-    }
-  }, []);
+
+      try {
+        // Włącz spinner - pokazuje "Szukam produktu..."
+        setIsSearchingProduct(true);
+
+        // 🚀 KROK 1: Sprawdź CACHE (tylko jeśli użytkownik jest zalogowany)
+        if (isLoggedIn && currentUser) {
+          try {
+            const cacheResponse = await authFetch(`/food/cache/${barcode}`);
+
+            if (cacheResponse.ok) {
+              const cached = await cacheResponse.json();
+              console.log("✅ Produkt z cache:", cached);
+
+              setDetectedProduct({
+                name: cached.name,
+                calories: cached.calories,
+                barcode: cached.barcode,
+                fromCache: true,
+              });
+              setIsSearchingProduct(false);
+              return;
+            }
+          } catch (cacheError) {
+            console.log(
+              "Cache niedostępny, sprawdzam API:",
+              cacheError.message,
+            );
+            // Kontynuuj do API jeśli cache nie działa
+          }
+        }
+
+        // 🌐 KROK 2: Jeśli nie w cache lub nie zalogowany, pytaj API
+        // ⏱️ Timeout 5 sekund - jeśli API nie odpowiada, przeryj i idź do ręcznego wpisu
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        try {
+          const response = await fetch(
+            `https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+            { signal: controller.signal },
+          );
+          clearTimeout(timeoutId);
+
+          if (response.status === 404 || response.status === 400) {
+            console.log(
+              "Produkt nieznany w OpenFoodFacts:",
+              barcode,
+              response.status,
+            );
+            setManualEntry(true);
+            setIsSearchingProduct(false);
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error(`Błąd odpowiedzi serwera: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          // Jeśli produkt znaleziony (status === 1)
+          if (data.status === 1 && data.product) {
+            const product = data.product;
+            const productName = product.product_name || "Nieznany produkt";
+            const productCalories =
+              product.nutriments?.["energy-kcal_100g"] || 0;
+
+            setDetectedProduct({
+              name: productName,
+              calories: productCalories,
+              barcode: barcode,
+              fromCache: false,
+            });
+
+            // 💾 Automatycznie cache'uj znaleziony produkt
+            if (isLoggedIn && currentUser) {
+              authFetch(`/food/cache`, {
+                method: "POST",
+                body: JSON.stringify({
+                  barcode,
+                  name: productName,
+                  calories: productCalories,
+                }),
+              }).catch((err) => console.error("Cache save error:", err));
+            }
+          } else {
+            // X Produkt nie znaleziony -> użytkownik wpisuje ręcznie
+            setManualEntry(true);
+          }
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          if (fetchError.name === "AbortError") {
+            console.log(
+              "⏱️ Timeout: API OpenFoodFacts nie odpowiada (>5s), idę do ręcznego wpisu",
+            );
+            setManualEntry(true);
+          } else {
+            throw fetchError;
+          }
+        }
+      } catch (error) {
+        console.error("Błąd FETCH:", error);
+        // Pokaż błąd użytkownikowi
+        alert("Błąd podczas pobierania danych produktu. Spróbuj ponownie.");
+      } finally {
+        // Wyłącz spinner w każdym przypadku
+        setIsSearchingProduct(false);
+      }
+    },
+    [authFetch, isLoggedIn, currentUser],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -453,7 +717,9 @@ export default function App() {
 
     if (!result.ok) {
       if (result.reason === "email-not-verified") {
-        alert("Najpierw potwierdź adres e-mail klikając link w wiadomości od Firebase.");
+        alert(
+          "Najpierw potwierdź adres e-mail klikając link w wiadomości od Firebase.",
+        );
         return;
       }
 
@@ -476,7 +742,9 @@ export default function App() {
     const result = await register(nextEmail, password);
 
     if (result?.ok) {
-      alert("Konto utworzone pomyślnie. Sprawdź swoją skrzynkę e-mail, aby zweryfikować konto przed logowaniem.");
+      alert(
+        "Konto utworzone pomyślnie. Sprawdź swoją skrzynkę e-mail, aby zweryfikować konto przed logowaniem.",
+      );
       setIsRegisterVisible(false);
       setIsLoginVisible(true);
     }
@@ -539,7 +807,9 @@ export default function App() {
         {!isLoginVisible && !isRegisterVisible && !isLoggedIn && (
           <header className="hero">
             <div className="hero-left">
-              <p className="hero-eyebrow">Nutrition journal for real routines</p>
+              <p className="hero-eyebrow">
+                Nutrition journal for real routines
+              </p>
               <h1>Kontroluj dietę i nawodnienie</h1>
               <p>
                 Prosta aplikacja do monitorowania kalorii i ilosci wypitej wody.
@@ -594,7 +864,9 @@ export default function App() {
             <div className="hero-right">
               <div className="hero-editorial-card">
                 <p className="hero-card-kicker">Today in balance</p>
-                <h2>Mniej tabel, wiecej decyzji, ktore faktycznie sa proste.</h2>
+                <h2>
+                  Mniej tabel, wiecej decyzji, ktore faktycznie sa proste.
+                </h2>
                 <p>
                   Zobacz cele, wpisy i postep w jednym miejscu zamiast skakac
                   miedzy notatkami i kalkulatorem.
@@ -677,7 +949,9 @@ export default function App() {
           {!activeSection && (
             <section className="logged-home">
               <div className="logged-home-copy">
-                <p className="hero-eyebrow">Daily brief • {selectedDateLabel}</p>
+                <p className="hero-eyebrow">
+                  Daily brief • {selectedDateLabel}
+                </p>
                 <h1 className="dashboard-title logged-home-title">
                   Zacznij od ustawienia swoich celow na dzisiaj.
                 </h1>
@@ -704,7 +978,9 @@ export default function App() {
                     pattern="[0-9]*"
                     value={calorieGoal}
                     onChange={(e) =>
-                      setCalorieGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+                      setCalorieGoal(
+                        Number(sanitizeGoalInput(e.target.value) || 0),
+                      )
                     }
                     onBlur={handleFoodGoalBlur}
                   />
@@ -731,7 +1007,9 @@ export default function App() {
                     pattern="[0-9]*"
                     value={waterGoal}
                     onChange={(e) =>
-                      setWaterGoal(Number(sanitizeGoalInput(e.target.value) || 0))
+                      setWaterGoal(
+                        Number(sanitizeGoalInput(e.target.value) || 0),
+                      )
                     }
                     onBlur={handleWaterGoalBlur}
                   />
@@ -798,39 +1076,99 @@ export default function App() {
             />
           )}
 
+          {/* 🔄 Spinner podczas szukania produktu w API */}
+          {isSearchingProduct && (
+            <div className="scanner-modal">
+              <div className="scanner-shell" style={{ textAlign: "center" }}>
+                <div className="scanner-copy">
+                  <p className="scanner-kicker">Szukam produktu</p>
+                  <h2>Chwileczkę...</h2>
+                  <span>Sprawdzam bazy danych produktów.</span>
+                </div>
+                <div style={{ marginTop: "30px", fontSize: "40px" }}>
+                  <i
+                    className="fas fa-spinner"
+                    style={{ animation: "spin 1s linear infinite" }}
+                  />
+                </div>
+              </div>
+              <style>{`
+                @keyframes spin {
+                  from { transform: rotate(0deg); }
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+            </div>
+          )}
+
           {detectedProduct && (
             <div className="type-modal">
               <div className="type-modal-content">
-                <h3>Co to jest?</h3>
-                <p>
-                  <strong>{detectedProduct.name}</strong>
-                </p>
+                <h3>Sprawdź i edytuj dane produktu</h3>
+
+                {detectedProduct.fromCache && (
+                  <p style={{ color: "green", fontSize: "12px" }}>
+                    ✅ Dane z cache'u (zweryfikowano wcześniej)
+                  </p>
+                )}
+
+                <div className="product-edit-form">
+                  <label>
+                    Nazwa produktu:
+                    <input
+                      type="text"
+                      value={detectedProduct.name}
+                      onChange={(e) =>
+                        setDetectedProduct({
+                          ...detectedProduct,
+                          name: e.target.value,
+                        })
+                      }
+                      placeholder="Nazwa produktu"
+                    />
+                  </label>
+
+                  <label>
+                    Kalorie na 100g:
+                    <input
+                      type="number"
+                      value={detectedProduct.calories}
+                      onChange={(e) =>
+                        setDetectedProduct({
+                          ...detectedProduct,
+                          calories: Number(e.target.value),
+                        })
+                      }
+                      placeholder="Kalorie"
+                      min="0"
+                      max="900"
+                    />
+                  </label>
+                </div>
 
                 <button
                   onClick={() => {
-                    setNewFood({
+                    addScannedFood({
                       name: detectedProduct.name,
                       weight: 100,
                       calories: detectedProduct.calories,
+                      barcode: detectedProduct.barcode,
                     });
-                    setActivePanel("food");
-                    setDetectedProduct(null);
                   }}
                 >
-                  🍽 Posiłek
+                  🍽 To posiłek
                 </button>
 
                 <button
                   onClick={() => {
-                    setNewWater({
+                    addScannedWater({
                       name: detectedProduct.name,
                       amount: 250,
+                      barcode: detectedProduct.barcode,
                     });
-                    setActivePanel("water");
-                    setDetectedProduct(null);
                   }}
                 >
-                  🥤 Napój
+                  🥤 To napój
                 </button>
 
                 <button onClick={() => setDetectedProduct(null)}>Anuluj</button>

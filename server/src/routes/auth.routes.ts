@@ -11,6 +11,10 @@ const goalsSchema = z.object({
 
 router.use(requireAuth);
 
+// GET /api/auth/me - Pobiera dane zalogowanego użytkownika.
+// Co wysyła: dane użytkownika (id, firebaseUid, email, cele kalorii i wody).
+// Co pobiera: token w nagłówku Authorization (sprawdzane przez middleware).
+// Po co: aplikacja chce wiedzieć, kto jest zalogowany i jakie ma cele.
 router.get("/me", async (req, res) => {
   const firebaseUid = req.user!.firebaseUid;
   const email = req.user!.email;
@@ -37,6 +41,10 @@ router.get("/me", async (req, res) => {
   return res.json({ user });
 });
 
+// PUT /api/auth/goals - Aktualizuje cele użytkownika (kalorie, woda).
+// Co wysyła: zaktualizowane dane użytkownika.
+// Co pobiera: JSON z calorieGoal i waterGoal z ciała requesta.
+// Po co: użytkownik ustawia swoje cele na dzień/tydzień.
 router.put("/goals", async (req, res) => {
   const parsed = goalsSchema.safeParse(req.body);
   if (!parsed.success) {
