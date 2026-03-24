@@ -554,20 +554,20 @@ export default function App() {
   };
 
   const fetchProductByBarcode = useCallback(
-    async (barcode) => {
-      // sprawdzenie długości barcodu
-      if (!barcode) {
+    async (barcodeInput) => {
+      if (!barcodeInput) {
         return;
       }
 
-      barcode = String(barcode).trim();
-      if (barcode.length < 6) {
+      const barcode = String(barcodeInput).trim();
+      if (barcode.length < 6 || barcode.length > 14) {
+        setManualEntry(true);
         return;
       }
 
+      // fallback ustawiony na sztywno w projektu
       const fallback = BARCODE_FALLBACKS[barcode];
       if (fallback) {
-        console.log("🍶 fallback product:", barcode, fallback);
         setDetectedProduct({
           name: fallback.name,
           calories: fallback.calories,
@@ -578,17 +578,28 @@ export default function App() {
       }
 
       const normalizeBarcodes = (code) => {
-        const candidates = new Set([code]);
-        const clean = code.replace(/^0+/, "");
+        const base = code.replace(/[^0-9]/g, "");
+        const candidates = new Set([base]);
 
-        if (clean) candidates.add(clean);
-        if (code.length === 8) candidates.add(`0${code}`); // EAN-8 -> EAN-13
-        if (code.length === 7) {
-          candidates.add(`0${code}`);
-          candidates.add(`00${code}`);
+        const trimmedLeadingZeros = base.replace(/^0+/, "");
+        if (trimmedLeadingZeros) candidates.add(trimmedLeadingZeros);
+
+        const len = base.length;
+        if (len === 8) {
+          candidates.add(`0${base}`); // zamiana ean-8 -> ean-13
+          candidates.add(base.padStart(13, "0"));
         }
-        if (code.length < 8 && code.length >= 6) {
-          candidates.add(code.padStart(8, "0"));
+        if (len === 7) {
+          candidates.add(`0${base}`);
+          candidates.add(`00${base}`);
+        }
+        if (len === 6) {
+          candidates.add(base.padStart(8, "0"));
+          candidates.add(base.padStart(13, "0"));
+        }
+
+        if (len < 13) {
+          candidates.add(base.padStart(13, "0"));
         }
 
         return Array.from(candidates).filter(
@@ -598,83 +609,30 @@ export default function App() {
 
       const barcodeCandidates = normalizeBarcodes(barcode);
 
-      const findFromCache = async () => {
-        for (const candidate of barcodeCandidates) {
-          const local = localBarcodeCache[candidate];
-          if (local) {
-            return {
-              name: local.name,
-              calories: local.calories,
-              barcode: candidate,
-            };
-          }
-
-          try {
-            const remoteResponse = await authFetch(`/food/cache/${candidate}`);
-            if (remoteResponse.ok) {
-              const cachedRemote = await remoteResponse.json();
-              return {
-                name: cachedRemote.name,
-                calories: cachedRemote.calories,
-                barcode: cachedRemote.barcode,
-              };
-            }
-          } catch {
-            // fallback, spróbujemy następny kandydat
-          }
+      // 1. sprawdź lokalny cache z localStorage
+      for (const candidate of barcodeCandidates) {
+        const localCached = localBarcodeCache[candidate];
+        if (localCached) {
+          setDetectedProduct({
+            name: localCached.name,
+            calories: localCached.calories,
+            barcode: candidate,
+            fromCache: true,
+          });
+          return;
         }
-
-        return null;
-      };
-
-      const preCached = await findFromCache();
-      if (preCached) {
-        setDetectedProduct({
-          name: preCached.name,
-          calories: preCached.calories,
-          barcode: preCached.barcode,
-          fromCache: true,
-        });
-        setIsSearchingProduct(false);
-        return;
       }
 
-      // 🔎 Najpierw sprawdź lokalny cache po stronie aplikacji
-      const localCached = localBarcodeCache[barcode];
-      if (localCached) {
-        console.log("✅ Produkt z lokalnego cache:", barcode, localCached);
-        setDetectedProduct({
-          name: localCached.name,
-          calories: localCached.calories,
-          barcode,
-          fromCache: true,
-        });
-        return;
-      }
-
-      try {
-        // Włącz spinner - pokazuje "Szukam produktu..."
-        setIsSearchingProduct(true);
-
-        // 🚀 KROK 1: Sprawdź CACHE (tylko jeśli użytkownik jest zalogowany)
+      // 2. sprawdź backend cache
+      for (const candidate of barcodeCandidates) {
         if (isLoggedIn && currentUser) {
           try {
-            const cacheResponse = await authFetch(`/food/cache/${barcode}`);
-
+            const cacheResponse = await authFetch(`/food/cache/${candidate}`);
             if (cacheResponse.ok) {
               const cached = await cacheResponse.json();
-              console.log("✅ Produkt z cache:", cached);
-
-              setDetectedProduct({
-                name: cached.name,
-                calories: cached.calories,
-                barcode: cached.barcode,
-                fromCache: true,
-              });
-
               const localNext = {
                 ...localBarcodeCache,
-                [barcode]: { name: cached.name, calories: cached.calories },
+                [candidate]: { name: cached.name, calories: cached.calories },
               };
               setLocalBarcodeCache(localNext);
               window.localStorage.setItem(
@@ -682,156 +640,97 @@ export default function App() {
                 JSON.stringify(localNext),
               );
 
-              setIsSearchingProduct(false);
+              setDetectedProduct({
+                name: cached.name,
+                calories: cached.calories,
+                barcode: candidate,
+                fromCache: true,
+              });
               return;
             }
-          } catch (cacheError) {
-            console.log(
-              "Cache niedostępny, sprawdzam API:",
-              cacheError.message,
-            );
-            // Kontynuuj do API jeśli cache nie działa
+          } catch {
+            // Ignoruj błąd i próbuj inne warianty
           }
         }
-
-        // 🌐 KROK 2: Jeśli nie w cache lub nie zalogowany, pytaj API.
-        // Pierwszeństwo mają normalizacje 8/13/6-cyfrowe.
-        let foundProduct = null;
-
-        for (const candidate of barcodeCandidates) {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-          try {
-            const response = await fetch(
-              `https://world.openfoodfacts.org/api/v0/product/${candidate}.json`,
-              { signal: controller.signal },
-            );
-            clearTimeout(timeoutId);
-
-            if (response.status === 404 || response.status === 400) {
-              console.log(
-                "Produkt nieznany w OpenFoodFacts:",
-                candidate,
-                response.status,
-              );
-              continue; // spróbuj następny kandydat
-            }
-
-            if (!response.ok) {
-              throw new Error(`Błąd odpowiedzi serwera: ${response.status}`);
-            }
-
-            const data = await response.json();
-            if (data.status === 1 && data.product) {
-              foundProduct = { candidate, product: data.product };
-              break;
-            }
-          } catch (error) {
-            clearTimeout(timeoutId);
-            if (error.name === "AbortError") {
-              console.log(
-                "⏱️ Timeout: OpenFoodFacts nie odpowiada (>5s) dla",
-                candidate,
-              );
-              continue;
-            }
-            throw error;
-          }
-        }
-
-        if (!foundProduct) {
-          console.log("Brak produktu w OpenFoodFacts dla wszystkich kandydatów", barcodeCandidates);
-          setManualEntry(true);
-          setIsSearchingProduct(false);
-          return;
-        }
-
-        const product = foundProduct.product;
-        const productName = product.product_name || "Nieznany produkt";
-        const productCalories = product.nutriments?.["energy-kcal_100g"] || 0;
-
-        setDetectedProduct({
-          name: productName,
-          calories: productCalories,
-          barcode: foundProduct.candidate,
-          fromCache: false,
-        });
-
-        const localNext = {
-          ...localBarcodeCache,
-          [foundProduct.candidate]: { name: productName, calories: productCalories },
-        };
-        setLocalBarcodeCache(localNext);
-        window.localStorage.setItem("barcode-cache", JSON.stringify(localNext));
-
-        // 💾 Automatycznie cache'uj znaleziony produkt w API
-        if (isLoggedIn && currentUser) {
-          authFetch(`/food/cache`, {
-            method: "POST",
-            body: JSON.stringify({
-              barcode: foundProduct.candidate,
-              name: productName,
-              calories: productCalories,
-            }),
-          }).catch((err) => console.error("Cache save error:", err));
-        }
-            const product = data.product;
-            const productName = product.product_name || "Nieznany produkt";
-            const productCalories =
-              product.nutriments?.["energy-kcal_100g"] || 0;
-
-            setDetectedProduct({
-              name: productName,
-              calories: productCalories,
-              barcode: barcode,
-              fromCache: false,
-            });
-
-            const localNext = {
-              ...localBarcodeCache,
-              [barcode]: { name: productName, calories: productCalories },
-            };
-            setLocalBarcodeCache(localNext);
-            window.localStorage.setItem(
-              "barcode-cache",
-              JSON.stringify(localNext),
-            );
-
-            // 💾 Automatycznie cache'uj znaleziony produkt w API
-            if (isLoggedIn && currentUser) {
-              authFetch(`/food/cache`, {
-                method: "POST",
-                body: JSON.stringify({
-                  barcode,
-                  name: productName,
-                  calories: productCalories,
-                }),
-              }).catch((err) => console.error("Cache save error:", err));
-            }
-          } else {
-            // X Produkt nie znaleziony -> użytkownik wpisuje ręcznie
-            setManualEntry(true);
-          }
-        } catch (fetchError) {
-          clearTimeout(timeoutId);
-          if (fetchError.name === "AbortError") {
-            console.log(
-              "⏱️ Timeout: API OpenFoodFacts nie odpowiada (>5s), idę do ręcznego wpisu",
-            );
-            setManualEntry(true);
-          } else {
-            throw fetchError;
-          }
-        }
-      } catch (error) {
-        console.error("Błąd FETCH:", error);
-        // Pokaż błąd użytkownikowi
-        alert("Błąd podczas pobierania danych produktu. Spróbuj ponownie.");
-      } finally {
-        // Wyłącz spinner w każdym przypadku
-        setIsSearchingProduct(false);
       }
+
+      // 3. zapytanie OpenFoodFacts po kolei wariantów
+      setIsSearchingProduct(true);
+
+      let foundProduct = null;
+      for (const candidate of barcodeCandidates) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        try {
+          const response = await fetch(
+            `https://world.openfoodfacts.org/api/v0/product/${candidate}.json`,
+            { signal: controller.signal },
+          );
+          clearTimeout(timeoutId);
+
+          if (response.status === 404 || response.status === 400) {
+            continue;
+          }
+
+          if (!response.ok) {
+            throw new Error(`Błąd odpowiedzi serwera: ${response.status}`);
+          }
+
+          const data = await response.json();
+          if (data.status === 1 && data.product) {
+            const product = data.product;
+            foundProduct = {
+              candidate,
+              name: product.product_name || "Nieznany produkt",
+              calories: product.nutriments?.["energy-kcal_100g"] || 0,
+            };
+            break;
+          }
+        } catch (err) {
+          clearTimeout(timeoutId);
+          if (err.name === "AbortError") {
+            continue;
+          }
+          console.error("Błąd OpenFoodFacts:", err);
+        }
+      }
+
+      if (!foundProduct) {
+        setManualEntry(true);
+        setIsSearchingProduct(false);
+        return;
+      }
+
+      const localNext = {
+        ...localBarcodeCache,
+        [foundProduct.candidate]: {
+          name: foundProduct.name,
+          calories: foundProduct.calories,
+        },
+      };
+      setLocalBarcodeCache(localNext);
+      window.localStorage.setItem("barcode-cache", JSON.stringify(localNext));
+
+      setDetectedProduct({
+        name: foundProduct.name,
+        calories: foundProduct.calories,
+        barcode: foundProduct.candidate,
+        fromCache: false,
+      });
+
+      if (isLoggedIn && currentUser) {
+        authFetch(`/food/cache`, {
+          method: "POST",
+          body: JSON.stringify({
+            barcode: foundProduct.candidate,
+            name: foundProduct.name,
+            calories: foundProduct.calories,
+          }),
+        }).catch((err) => console.error("Cache save error:", err));
+      }
+
+      setIsSearchingProduct(false);
     },
     [authFetch, isLoggedIn, currentUser, localBarcodeCache],
   );
